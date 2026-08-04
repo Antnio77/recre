@@ -182,13 +182,18 @@ logoutBtn.addEventListener("click", async () => {
 // Ne fait rien si personne n'est connecté.
 window.saveScore = async function (game, difficulty, score, total) {
   if (!currentUser) return;
-  await supabaseClient.from("scores").insert({
+  const { error } = await supabaseClient.from("scores").insert({
     user_id: currentUser.id,
     game,
     difficulty,
     score,
     total,
   });
+  if (error) {
+    console.error("Erreur lors de la sauvegarde du score :", error);
+  } else {
+    console.log("Score sauvegardé avec succès :", { game, difficulty, score, total });
+  }
 };
 
 refreshSession();
