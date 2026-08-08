@@ -6,5 +6,5 @@
 // visible côté client, la sécurité est assurée par les règles RLS
 // définies dans setup-supabase.sql.
 
-const SUPABASE_URL = "https://TON-PROJET.supabase.co";
-const SUPABASE_ANON_KEY = "TA_CLE_ANON_PUBLIQUE";
+const SUPABASE_URL = "https://xyfjhbhicneqfenjyikn.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_D-M-dkpSc_SzeU51ZmP5qA_g6dHn-Bw";
