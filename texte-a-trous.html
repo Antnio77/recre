@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Texte à trous — La Récré</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <div class="logo">
+        <span class="logo-dot"></span>
+        La Récré
+      </div>
+      <div class="header-right">
+        <button class="mobile-menu-btn" id="mobile-menu-btn" type="button" aria-label="Menu">☰</button>
+        <div class="header-actions" id="header-actions">
+        <div class="lang-switch">
+          <button class="lang-btn" id="lang-btn" type="button">
+            <span id="lang-btn-flag">🇫🇷</span> <span id="lang-btn-code">FR</span>
+          </button>
+          <div class="lang-dropdown" id="lang-dropdown">
+            <button class="lang-option active" data-lang="fr" type="button">🇫🇷 Français</button>
+            <button class="lang-option" data-lang="en" type="button">🇬🇧 English</button>
+          </div>
+        </div>
+        <button class="login-btn" id="login-btn" type="button"></button>
+      </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="game-page wrap">
+    <div style="text-align:center;">
+      <a class="back-link" href="index.html" data-i18n="backLink">← Retour au centre de jeux</a>
+    </div>
+
+    <div class="game-header">
+      <h1 data-i18n="gameTitle8">Texte à trous</h1>
+    </div>
+
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="progress-label" id="progress-label" data-i18n="chooseLevelShort">Choisis un niveau pour commencer</div>
+
+    <div class="stats-card" id="login-prompt" style="display:none;">
+      <p class="instructions" data-i18n="levelLoginPrompt" style="margin-bottom:0;">Connecte-toi pour voir ta progression.</p>
+    </div>
+
+    <div class="premium-locked-card" id="premium-locked" style="display:none;">
+      <span class="lock-emoji">🔒</span>
+      <h2 data-i18n="premiumLockedTitle">Jeu premium</h2>
+      <p class="instructions" data-i18n="premiumLockedMessage" style="margin-bottom:0;">Ce jeu est réservé aux comptes premium. Connecte-toi et entre ton code dans « Mon compte » pour y accéder.</p>
+    </div>
+
+    <div class="game-card difficulty-screen" id="difficulty-screen" style="display:none;">
+      <p class="instructions" data-i18n="chooseLevelTitle">Choisis ton niveau de difficulté</p>
+      <div class="difficulty-options">
+        <button class="difficulty-btn difficulty-btn--facile" data-level="facile" type="button">
+          <span class="difficulty-label" data-i18n="levelEasyLabel">Facile</span>
+          <span class="difficulty-desc" data-i18n="textEasyDesc">Textes courts, vocabulaire simple</span>
+        </button>
+        <button class="difficulty-btn difficulty-btn--moyen" data-level="moyen" type="button">
+          <span class="difficulty-label" data-i18n="levelMediumLabel">Moyen</span>
+          <span class="difficulty-desc" data-i18n="textMediumDesc">Textes un peu plus longs, quelques pièges</span>
+        </button>
+        <button class="difficulty-btn difficulty-btn--difficile" data-level="difficile" type="button">
+          <span class="difficulty-label" data-i18n="levelHardLabel">Difficile</span>
+          <span class="difficulty-desc" data-i18n="textHardDesc">Textes soutenus, plusieurs trous par texte</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="game-card" id="game-card" style="display:none;">
+      <p class="instructions" data-i18n="textInstructions">Clique sur le bon mot pour compléter le texte.</p>
+      <div class="numeric-display" id="sentence-text" style="font-size:19px; font-weight:600; text-align:left;"></div>
+      <div class="choices" id="choices"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="actions">
+        <button class="btn btn-primary" id="next-btn" style="display:none;" data-i18n="nextBtn">Phrase suivante →</button>
+      </div>
+    </div>
+
+    <div class="game-card result-screen" id="result-screen" style="display:none;">
+      <h2 data-i18n="gameOverTitle">Partie terminée !</h2>
+      <div class="score" id="final-score">0 / 8</div>
+      <p class="instructions" data-i18n="resultSubtext8">Mots correctement complétés</p>
+      <div class="actions">
+        <button class="btn btn-primary" id="replay-btn" data-i18n="replayBtn">Rejouer</button>
+        <button class="btn btn-secondary" id="change-level-btn" data-i18n="changeLevelBtn">Changer de niveau</button>
+        <a class="btn btn-secondary" href="index.html" data-i18n="backToCenterBtn">Retour au centre</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap" data-i18n="footer">La Récré — un petit coin pour souffler</div>
+  </footer>
+
+  <div class="modal-overlay" id="auth-modal">
+    <div class="modal-card">
+      <button class="modal-close" id="modal-close" type="button">&times;</button>
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login" type="button" data-i18n="tabLogin">Connexion</button>
+        <button class="auth-tab" data-tab="signup" type="button" data-i18n="tabSignup">Inscription</button>
+      </div>
+
+      <p class="auth-error" id="auth-error"></p>
+
+      <div class="auth-form" id="login-form">
+        <h2 data-i18n="loginTitle">Content de te revoir</h2>
+        <div class="modal-field">
+          <label data-i18n="labelEmail">Email</label>
+          <input type="email" class="modal-input" id="login-email" data-i18n-placeholder="placeholderEmail" placeholder="toi@exemple.com">
+        </div>
+        <div class="modal-field">
+          <label data-i18n="labelPassword">Mot de passe</label>
+          <input type="password" class="modal-input" id="login-password" data-i18n-placeholder="placeholderPassword" placeholder="********">
+        </div>
+        <button class="btn btn-primary" id="login-submit" type="button" style="width:100%;" data-i18n="loginSubmitBtn">Se connecter</button>
+      </div>
+
+      <div class="auth-form" id="signup-form" style="display:none;">
+        <h2 data-i18n="signupTitle">Créer un compte</h2>
+        <div class="modal-field">
+          <label data-i18n="labelFirstName">Prénom</label>
+          <input type="text" class="modal-input" id="signup-name" data-i18n-placeholder="placeholderFirstName" placeholder="Ton prénom">
+        </div>
+        <div class="modal-field">
+          <label data-i18n="labelEmail">Email</label>
+          <input type="email" class="modal-input" id="signup-email" data-i18n-placeholder="placeholderEmail" placeholder="toi@exemple.com">
+        </div>
+        <div class="modal-field">
+          <label data-i18n="labelPassword">Mot de passe</label>
+          <input type="password" class="modal-input" id="signup-password" data-i18n-placeholder="placeholderPassword" placeholder="********">
+        </div>
+        <button class="btn btn-primary" id="signup-submit" type="button" style="width:100%;" data-i18n="signupSubmitBtn">Créer mon compte</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="account-modal">
+    <div class="modal-card">
+      <button class="modal-close" id="account-modal-close" type="button">&times;</button>
+      <h2 data-i18n="accountTitle">Mon compte</h2>
+      <p class="instructions" id="account-email" style="margin-bottom:12px;"></p>
+      <span class="premium-badge" id="premium-badge" style="display:none;" data-i18n="premiumBadgeText">✨ Premium</span>
+      <div id="account-scores"></div>
+
+      <div class="premium-section">
+        <label data-i18n="premiumCodeLabel">Code premium</label>
+        <div class="premium-code-row">
+          <input type="text" class="modal-input" id="premium-code-input" data-i18n-placeholder="premiumCodePlaceholder" placeholder="Ton code" autocomplete="off">
+          <button class="btn btn-primary" id="premium-code-btn" type="button" data-i18n="premiumCodeBtn">Valider</button>
+        </div>
+        <p class="auth-error" id="premium-code-message"></p>
+      </div>
+
+      <div class="premium-section" style="display:flex; gap:8px; flex-wrap:wrap; border-top:none; padding-top:0; margin-top:14px;">
+        <a href="classe.html" class="btn btn-secondary" style="flex:1; padding:8px 12px; font-size:13px;" data-i18n="myClassBtn">🏫 Ma classe</a>
+        <a href="espace-prof.html" class="btn btn-secondary" style="flex:1; padding:8px 12px; font-size:13px;" data-i18n="teacherSpaceBtn">👩‍🏫 Espace prof</a>
+      </div>
+
+      <button class="btn btn-secondary" id="logout-btn" type="button" style="width:100%; margin-top:12px;" data-i18n="logoutBtn">Se déconnecter</button>
+    </div>
+  </div>
+
+  <script src="script-lang.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="script-auth.js"></script>
+  <script src="script-premium.js"></script>
+  <script src="script-texte-a-trous.js"></script>
+</body>
+</html>
