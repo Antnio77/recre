@@ -1,18 +1,22 @@
-const languagesSection = document.getElementById("languages-section");
-const mathsSection = document.getElementById("maths-section");
-const categoryLanguagesBtn = document.getElementById("category-languages-btn");
-const categoryMathsBtn = document.getElementById("category-maths-btn");
+const categories = ["languages", "maths", "histgeo"];
+
+const categorySections = {};
+const categoryButtons = {};
+categories.forEach((cat) => {
+  categorySections[cat] = document.getElementById(`${cat}-section`);
+  categoryButtons[cat] = document.getElementById(`category-${cat}-btn`);
+});
 
 function showCategory(category) {
-  const isMaths = category === "maths";
-  languagesSection.style.display = isMaths ? "none" : "grid";
-  mathsSection.style.display = isMaths ? "grid" : "none";
-  categoryLanguagesBtn.classList.toggle("active", !isMaths);
-  categoryMathsBtn.classList.toggle("active", isMaths);
+  categories.forEach((cat) => {
+    categorySections[cat].style.display = cat === category ? "grid" : "none";
+    categoryButtons[cat].classList.toggle("active", cat === category);
+  });
   localStorage.setItem("recre-category", category);
 }
 
-categoryLanguagesBtn.addEventListener("click", () => showCategory("languages"));
-categoryMathsBtn.addEventListener("click", () => showCategory("maths"));
+categories.forEach((cat) => {
+  categoryButtons[cat].addEventListener("click", () => showCategory(cat));
+});
 
 showCategory(localStorage.getItem("recre-category") || "languages");

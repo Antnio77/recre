@@ -235,6 +235,16 @@ const translations = {
     quizHardDesc: "Réciproques, puissances, notions plus fines",
     quizInstructions: "Clique sur la bonne réponse à la question.",
     resultSubtext11: "Bonnes réponses trouvées",
+
+    categoryHistgeo: "Histoire-Géo",
+    tile12Title: "Quiz Histoire-Géo",
+    tile12Desc: "Dates clés, repères géographiques et grandes notions, de la 6ème à la 2nde.",
+    gameTitle12: "Quiz Histoire-Géo",
+    histgeoEasyDesc: "Niveau 6e-5e : dates clés, repères simples",
+    histgeoMediumDesc: "Niveau 4e-3e : Révolution, guerres mondiales, institutions",
+    histgeoHardDesc: "Niveau 3e-2nde : Guerre froide, Union européenne, mondialisation",
+    histgeoInstructions: "Clique sur la bonne réponse à la question.",
+    resultSubtext12: "Bonnes réponses trouvées",
   },
   en: {
     footer: "La Récré — a little corner to unwind",
@@ -472,6 +482,16 @@ const translations = {
     quizHardDesc: "Converses, powers, finer concepts",
     quizInstructions: "Click the correct answer to the question.",
     resultSubtext11: "Correct answers found",
+
+    categoryHistgeo: "History-Geography",
+    tile12Title: "History-Geography Quiz",
+    tile12Desc: "Key dates, geographical landmarks and big ideas, from grade 6 to grade 10.",
+    gameTitle12: "History-Geography Quiz",
+    histgeoEasyDesc: "Grade 6-7 level: key dates, simple landmarks",
+    histgeoMediumDesc: "Grade 8-9 level: revolutions, world wars, institutions",
+    histgeoHardDesc: "Grade 9-10 level: Cold War, European Union, globalization",
+    histgeoInstructions: "Click the correct answer to the question.",
+    resultSubtext12: "Correct answers found",
   },
 };
 

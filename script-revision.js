@@ -60,6 +60,12 @@ const RENDERERS = {
     displayField: "question",
     displayStyle: "font-size:19px; font-weight:600; text-align:left;",
   }),
+  "histoire-geo": makeMultipleChoiceRenderer({
+    game: "histoire-geo",
+    instructionsKey: "histgeoInstructions",
+    displayField: "question",
+    displayStyle: "font-size:19px; font-weight:600; text-align:left;",
+  }),
 };
 
 const GAME_EMOJIS = {
@@ -74,6 +80,7 @@ const GAME_EMOJIS = {
   "problemes-multi-etapes": "🧩",
   "geometrie-eclair": "📐",
   "quiz-maths-3eme": "🎓",
+  "histoire-geo": "🌍",
 };
 
 let mistakesByGame = {};
@@ -322,7 +329,7 @@ function itemKeyFor(game, data) {
   if (game === "bonne-phrase") return data.options.join(" / ");
   if (game === "calcul-mental" || game === "bon-resultat-maths") return data.expr;
   if (game === "texte-a-trous") return data.sentence;
-  if (game === "quiz-maths-3eme") return data.question;
+  if (game === "quiz-maths-3eme" || game === "histoire-geo") return data.question;
   return data.text;
 }
 

@@ -29,6 +29,7 @@ function gameDisplayName(game) {
   if (game === "problemes-multi-etapes") return t("tile9Title");
   if (game === "geometrie-eclair") return t("tile10Title");
   if (game === "quiz-maths-3eme") return t("tile11Title");
+  if (game === "histoire-geo") return t("tile12Title");
   return game;
 }
 
