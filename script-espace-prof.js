@@ -1,9 +1,13 @@
 const LANG_GAMES = ["orthographe", "dictee", "bonne-phrase", "conjugaison-eclair", "texte-a-trous"];
+const HISTGEO_GAMES = ["histoire-geo"];
 const DIFFICULTY_WEIGHT = { facile: 0.6, moyen: 0.8, difficile: 1 };
 
 function categorizeScore(row) {
   if (LANG_GAMES.includes(row.game)) {
     return row.lang === "en" ? "en" : "fr";
+  }
+  if (HISTGEO_GAMES.includes(row.game)) {
+    return "histgeo";
   }
   return "maths";
 }
@@ -44,12 +48,13 @@ function renderStudents(students) {
       const totalXp = scores.reduce((sum, r) => sum + xpForRow(r), 0);
       const levelIdx = levelIndexForXp(totalXp);
 
-      const buckets = { fr: [], en: [], maths: [] };
+      const buckets = { fr: [], en: [], maths: [], histgeo: [] };
       scores.forEach((r) => buckets[categorizeScore(r)].push(weightedPct(r)));
       const avg = (arr) => (arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0);
       const frPct = avg(buckets.fr);
       const enPct = avg(buckets.en);
       const mathsPct = avg(buckets.maths);
+      const histgeoPct = avg(buckets.histgeo);
 
       const byGame = {};
       scores.forEach((r) => {
@@ -70,7 +75,7 @@ function renderStudents(students) {
         .map((r) => {
           const date = new Date(r.played_at).toLocaleDateString(currentLang === "en" ? "en-US" : "fr-FR");
           const cat = categorizeScore(r);
-          const flag = cat === "en" ? "🇬🇧" : cat === "fr" ? "🇫🇷" : "🔢";
+          const flag = cat === "en" ? "🇬🇧" : cat === "fr" ? "🇫🇷" : cat === "histgeo" ? "🌍" : "🔢";
           return `
           <div class="score-row">
             <span class="score-game">${flag} ${gameDisplayName(r.game)} <span>(${difficultyLabel(r.difficulty)} · ${date})</span></span>
@@ -107,6 +112,11 @@ function renderStudents(students) {
               <div class="student-strength-label">${t("statCategoryMaths")}</div>
               <div class="student-strength-bar"><div class="student-strength-fill maths" style="width:${mathsPct}%;"></div></div>
               <div class="student-strength-pct">${mathsPct}%</div>
+            </div>
+            <div class="student-strength">
+              <div class="student-strength-label">${t("statCategoryHistgeo")}</div>
+              <div class="student-strength-bar"><div class="student-strength-fill histgeo" style="width:${histgeoPct}%;"></div></div>
+              <div class="student-strength-pct">${histgeoPct}%</div>
             </div>
           </div>
 

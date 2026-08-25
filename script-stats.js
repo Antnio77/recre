@@ -3,11 +3,15 @@ let strengthsChartInstance = null;
 let lastScores = null;
 
 const LANG_GAMES = ["orthographe", "dictee", "bonne-phrase", "conjugaison-eclair", "texte-a-trous"];
+const HISTGEO_GAMES = ["histoire-geo"];
 const DIFFICULTY_WEIGHT = { facile: 0.6, moyen: 0.8, difficile: 1 };
 
 function categorizeScore(row) {
   if (LANG_GAMES.includes(row.game)) {
     return row.lang === "en" ? "en" : "fr";
+  }
+  if (HISTGEO_GAMES.includes(row.game)) {
+    return "histgeo";
   }
   return "maths";
 }
@@ -52,7 +56,7 @@ function renderProgressChart(scores) {
 }
 
 function renderStrengthsChart(scores) {
-  const buckets = { fr: [], en: [], maths: [] };
+  const buckets = { fr: [], en: [], maths: [], histgeo: [] };
   scores.forEach((r) => buckets[categorizeScore(r)].push(weightedPct(r)));
   const avg = (arr) => (arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0);
 
@@ -61,11 +65,11 @@ function renderStrengthsChart(scores) {
   strengthsChartInstance = new Chart(ctx, {
     type: "radar",
     data: {
-      labels: [t("statCategoryFr"), t("statCategoryEn"), t("statCategoryMaths")],
+      labels: [t("statCategoryFr"), t("statCategoryEn"), t("statCategoryMaths"), t("statCategoryHistgeo")],
       datasets: [
         {
           label: t("statsScoreAxis"),
-          data: [avg(buckets.fr), avg(buckets.en), avg(buckets.maths)],
+          data: [avg(buckets.fr), avg(buckets.en), avg(buckets.maths), avg(buckets.histgeo)],
           backgroundColor: "rgba(58,175,169,0.25)",
           borderColor: "#3AAFA9",
           pointBackgroundColor: "#3AAFA9",
@@ -89,7 +93,7 @@ function renderHistory(scores) {
     .map((row) => {
       const date = new Date(row.created_at).toLocaleDateString(locale);
       const category = categorizeScore(row);
-      const flag = category === "en" ? "🇬🇧" : category === "fr" ? "🇫🇷" : "🔢";
+      const flag = category === "en" ? "🇬🇧" : category === "fr" ? "🇫🇷" : category === "histgeo" ? "🌍" : "🔢";
       const pct = Math.round(weightedPct(row));
       return `
       <div class="score-row">

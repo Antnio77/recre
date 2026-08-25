@@ -731,6 +731,7 @@ a{ color: inherit; text-decoration: none; }
 .student-strength-fill.fr{ background: var(--teal); }
 .student-strength-fill.en{ background: var(--coral); }
 .student-strength-fill.maths{ background: var(--indigo); }
+.student-strength-fill.histgeo{ background: var(--amber); }
 .student-strength-pct{
   font-size: 11px;
   font-weight:700;
