@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calcul mental éclair — La Récré</title>
+<title>Duel : Calcul mental éclair — La Récré</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="stylesheet" href="style.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,18 +37,35 @@
 
   <main class="game-page wrap">
     <div style="text-align:center;">
-      <a class="back-link" href="index.html" data-i18n="backLink">← Retour au centre de jeux</a>
+      <a class="back-link" href="calcul-mental.html" data-i18n="duelBackToSolo">← Retour au calcul mental solo</a>
     </div>
 
     <div class="game-header">
-      <h1 data-i18n="gameTitle4">Calcul mental éclair</h1>
+      <h1 data-i18n="duelPageTitle">Duel : Calcul mental éclair</h1>
     </div>
 
-    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-    <div class="progress-label" id="progress-label" data-i18n="chooseLevelShort">Choisis un niveau pour commencer</div>
+    <div class="stats-card" id="login-prompt" style="display:none;">
+      <p class="instructions" data-i18n="duelLoginPromptText" style="margin-bottom:0;">Connecte-toi pour lancer un duel.</p>
+    </div>
 
-    <div class="game-card difficulty-screen" id="difficulty-screen">
-      <p class="instructions" data-i18n="chooseLevelTitle">Choisis ton niveau de difficulté</p>
+    <!-- Écran de choix -->
+    <div class="game-card" id="duel-choice-screen" style="display:none;">
+      <p class="instructions" data-i18n="duelChooseAction">Défie un ami en calcul mental !</p>
+      <div class="duel-action-choice">
+        <button class="duel-action-btn" id="duel-show-create-btn" type="button">
+          <span class="duel-action-emoji">⚔️</span>
+          <span class="duel-action-label" data-i18n="duelCreateBtn">Créer un duel</span>
+        </button>
+        <button class="duel-action-btn" id="duel-show-join-btn" type="button">
+          <span class="duel-action-emoji">🔑</span>
+          <span class="duel-action-label" data-i18n="duelJoinBtn">Rejoindre un duel</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Écran de création (choix du niveau) -->
+    <div class="game-card difficulty-screen" id="duel-create-screen" style="display:none;">
+      <p class="instructions" data-i18n="duelCreateTitle">Choisis le niveau du duel</p>
       <div class="difficulty-options">
         <button class="difficulty-btn difficulty-btn--facile" data-level="facile" type="button">
           <span class="difficulty-label" data-i18n="levelEasyLabel">Facile</span>
@@ -64,37 +81,90 @@
         </button>
       </div>
       <div class="actions">
-        <a href="duel-calcul-mental.html" class="btn btn-secondary" data-i18n="duelChallengeFriendBtn">⚔️ Défier un ami</a>
+        <button class="btn btn-secondary duel-back-to-choice" type="button" data-i18n="duelBackBtn">← Retour</button>
       </div>
     </div>
 
-    <div class="game-card" id="game-card" style="display:none;">
-      <p class="instructions" data-i18n="calcInstructions">Résous le calcul avant la fin du temps imparti.</p>
-
-      <div class="timer-bar-wrap"><div class="timer-bar-fill" id="timer-fill"></div></div>
-
-      <div class="numeric-display" id="expression"></div>
-
-      <input type="text" inputmode="numeric" class="answer-input" id="answer-input" data-i18n-placeholder="numericAnswerPlaceholder" placeholder="Ta réponse..." autocomplete="off" spellcheck="false">
-
-      <div id="keypad-container"></div>
-
-      <div class="corrections" id="feedback"></div>
-
+    <!-- Écran pour rejoindre (saisie du code) -->
+    <div class="game-card" id="duel-join-screen" style="display:none;">
+      <p class="instructions" data-i18n="duelJoinTitle">Entre le code de ton adversaire</p>
+      <form id="duel-join-form">
+        <div class="modal-field">
+          <input type="text" class="modal-input" id="duel-code-input" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" data-i18n-placeholder="duelCodePlaceholder" placeholder="Ex. AB12CD" style="text-align:center; font-family:'Baloo 2', sans-serif; font-weight:700; font-size:22px; letter-spacing:4px; text-transform:uppercase;">
+        </div>
+        <p class="auth-error" id="duel-join-error" data-i18n="duelJoinError">Code invalide, déjà utilisé, ou partie déjà complète.</p>
+        <button class="btn btn-primary" id="duel-join-submit" type="submit" style="width:100%;" data-i18n="duelJoinSubmitBtn">Rejoindre</button>
+      </form>
       <div class="actions">
-        <button class="btn btn-primary" id="validate-btn" data-i18n="validateBtn">Valider</button>
-        <button class="btn btn-primary" id="next-btn" style="display:none;" data-i18n="nextBtn">Phrase suivante →</button>
+        <button class="btn btn-secondary duel-back-to-choice" type="button" data-i18n="duelBackBtn">← Retour</button>
       </div>
     </div>
 
-    <div class="game-card result-screen" id="result-screen" style="display:none;">
-      <h2 data-i18n="gameOverTitle">Partie terminée !</h2>
-      <div class="score" id="final-score">0 / 8</div>
-      <p class="instructions" data-i18n="resultSubtext4">Calculs résolus correctement</p>
+    <!-- Salle d'attente -->
+    <div class="game-card" id="duel-waiting-screen" style="display:none;">
+      <p class="instructions" data-i18n="duelYourCode">Ton code de duel :</p>
+      <div class="duel-code-badge" id="duel-code-display">------</div>
+      <p class="instructions" data-i18n="duelShareHint">Donne ce code à ton adversaire pour qu'il/elle te rejoigne.</p>
+      <div class="actions" style="margin-top:0; margin-bottom:24px;">
+        <button class="btn btn-secondary" id="duel-copy-link-btn" type="button" data-i18n="duelCopyLinkBtn">Copier le lien</button>
+      </div>
+      <p class="auth-error" id="duel-copy-confirm" style="background:#DFF3E4; color:#2C7A46;" data-i18n="duelLinkCopied">Lien copié !</p>
+
+      <div class="duel-player-row">
+        <span id="duel-you-name">—</span>
+        <span class="duel-ready-tag" id="duel-you-ready" data-i18n="duelReadyTag">✓ prêt</span>
+      </div>
+      <div class="duel-player-row">
+        <span id="duel-opponent-name" data-i18n="duelWaitingForOpponent">En attente d'un adversaire...</span>
+        <span class="duel-ready-tag" id="duel-opponent-ready" data-i18n="duelReadyTag">✓ prêt</span>
+      </div>
+
       <div class="actions">
-        <button class="btn btn-primary" id="replay-btn" data-i18n="replayBtn">Rejouer</button>
-        <button class="btn btn-secondary" id="change-level-btn" data-i18n="changeLevelBtn">Changer de niveau</button>
-        <a class="btn btn-secondary" href="index.html" data-i18n="backToCenterBtn">Retour au centre</a>
+        <button class="btn btn-primary" id="duel-ready-btn" type="button" style="display:none;" data-i18n="duelReadyBtn">Je suis prêt !</button>
+      </div>
+      <p class="instructions" id="duel-waiting-ready-hint" style="display:none; margin-top:14px; margin-bottom:0;" data-i18n="duelWaitingReady">En attente que ton adversaire soit prêt...</p>
+    </div>
+
+    <!-- Partie -->
+    <div class="game-card" id="duel-game-card" style="display:none;">
+      <div class="duel-opponent-badge" id="duel-opponent-badge"></div>
+      <p class="progress-label" id="duel-progress-label" style="margin-bottom:14px;"></p>
+
+      <div class="timer-bar-wrap"><div class="timer-bar-fill" id="duel-timer-fill"></div></div>
+
+      <div class="numeric-display" id="duel-expression"></div>
+
+      <input type="text" inputmode="numeric" class="answer-input" id="duel-answer-input" data-i18n-placeholder="numericAnswerPlaceholder" placeholder="Ta réponse..." autocomplete="off" spellcheck="false">
+
+      <div id="duel-keypad-container"></div>
+
+      <div class="corrections" id="duel-feedback"></div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="duel-validate-btn" type="button" data-i18n="validateBtn">Valider</button>
+        <button class="btn btn-primary" id="duel-next-btn" type="button" style="display:none;" data-i18n="nextBtn">Phrase suivante →</button>
+      </div>
+    </div>
+
+    <!-- Résultat -->
+    <div class="game-card result-screen" id="duel-result-screen" style="display:none;">
+      <p class="instructions" id="duel-waiting-opponent-finish" style="display:none;" data-i18n="duelWaitingOpponentFinish">En attente que ton adversaire termine...</p>
+      <div id="duel-result-content" style="display:none;">
+        <h2 id="duel-result-title"></h2>
+        <div class="duel-vs-row">
+          <div class="duel-vs-col">
+            <div class="duel-vs-label" data-i18n="duelPlayerYou">Toi</div>
+            <div class="score" id="duel-you-score">0</div>
+          </div>
+          <div class="duel-vs-col">
+            <div class="duel-vs-label" id="duel-opponent-name-final">—</div>
+            <div class="score" id="duel-opponent-score-final">0</div>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary duel-new-duel-btn" type="button" data-i18n="duelNewDuelBtn">Nouveau duel</button>
+        <a class="btn btn-secondary" href="calcul-mental.html" data-i18n="duelBackToSolo">← Retour au calcul mental solo</a>
       </div>
     </div>
   </main>
@@ -107,7 +177,6 @@
   </footer>
 
   <script src="script-keypad.js"></script>
-  <script src="script-calcul-mental.js"></script>
 
   <div class="modal-overlay" id="auth-modal">
     <div class="modal-card">
@@ -183,7 +252,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="script-auth.js"></script>
-  <script src="script-mistakes.js"></script>
   <script src="script-premium.js"></script>
+  <script src="script-duel-calcul-mental.js"></script>
 </body>
 </html>
