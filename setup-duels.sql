@@ -18,7 +18,7 @@
 -- livré). Avant d'avoir rejoint, personne ne peut lire la ligne : tout
 -- passe par le code, jamais par une recherche/liste des parties en cours.
 
-create table public.duels (
+create table if not exists public.duels (
   id uuid primary key default gen_random_uuid(),
   code text not null unique,
   game text not null default 'calcul-mental',
@@ -44,6 +44,7 @@ alter table public.duels enable row level security;
 -- Seuls les deux participants (une fois qu'ils ont rejoint via le code)
 -- peuvent lire la ligne. Pas de policy "lobby ouvert" : impossible de
 -- lister ou deviner une partie sans avoir le code.
+drop policy if exists "participants can view their duel" on public.duels;
 create policy "participants can view their duel"
 on public.duels for select
 using (auth.uid() = host_user_id or auth.uid() = guest_user_id);
@@ -53,7 +54,18 @@ grant select on public.duels to authenticated;
 
 -- Active Supabase Realtime sur cette table (pousse les UPDATE aux deux
 -- joueurs abonnés : arrivée de l'adversaire, prêt, score qui progresse...).
-alter publication supabase_realtime add table public.duels;
+-- Protégé par un test d'existence : "alter publication ... add table" plante
+-- si la table est déjà membre de la publication (par ex. si ce script est
+-- relancé après un premier passage partiellement réussi).
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'duels'
+  ) then
+    alter publication supabase_realtime add table public.duels;
+  end if;
+end $$;
 
 -- Crée un duel et renvoie son id + son code à donner à l'adversaire.
 -- p_questions est le tableau de questions {expr, answer} déjà échantillonné
