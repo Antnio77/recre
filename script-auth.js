@@ -31,6 +31,7 @@ function gameDisplayName(game) {
   if (game === "quiz-maths-3eme") return t("tile11Title");
   if (game === "histoire-geo") return t("tile12Title");
   if (game === "frise-chronologique") return t("tile13Title");
+  if (game === "carte-muette") return t("tile14Title");
   return game;
 }
 

@@ -257,6 +257,15 @@ const translations = {
     timelineEmptySlot: "?",
     timelineCorrectOrder: "Ordre chronologique correct :",
     resultSubtext13: "Frises correctement ordonnées",
+
+    tile14Title: "Carte muette : Europe",
+    tile14Desc: "Clique sur le bon pays sur la carte d'Europe.",
+    gameTitle14: "Carte muette : Europe",
+    mapEasyDesc: "Grands pays bien connus (France, Allemagne, Espagne...)",
+    mapMediumDesc: "Pays d'Europe centrale et du Nord",
+    mapHardDesc: "Petits pays et Balkans, plus difficiles à repérer",
+    mapClickOn: "Clique sur :",
+    resultSubtext14: "Pays correctement repérés",
   },
   en: {
     footer: "La Récré — a little corner to unwind",
@@ -516,6 +525,15 @@ const translations = {
     timelineEmptySlot: "?",
     timelineCorrectOrder: "Correct chronological order:",
     resultSubtext13: "Timelines correctly ordered",
+
+    tile14Title: "Blank Map: Europe",
+    tile14Desc: "Click the correct country on the map of Europe.",
+    gameTitle14: "Blank Map: Europe",
+    mapEasyDesc: "Big, well-known countries (France, Germany, Spain...)",
+    mapMediumDesc: "Central and Northern European countries",
+    mapHardDesc: "Small countries and the Balkans, trickier to spot",
+    mapClickOn: "Click on:",
+    resultSubtext14: "Countries correctly spotted",
   },
 };
 

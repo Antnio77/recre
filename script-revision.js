@@ -70,6 +70,10 @@ const RENDERERS = {
     render: renderTimelineItem,
     validate: validateTimelineItem,
   },
+  "carte-muette": {
+    render: renderCarteMuetteItem,
+    validate: () => {},
+  },
 };
 
 const GAME_EMOJIS = {
@@ -86,6 +90,7 @@ const GAME_EMOJIS = {
   "quiz-maths-3eme": "🎓",
   "histoire-geo": "🌍",
   "frise-chronologique": "🕰️",
+  "carte-muette": "🗺️",
 };
 
 let mistakesByGame = {};
@@ -339,6 +344,7 @@ function itemKeyFor(game, data) {
   if (game === "frise-chronologique") {
     return [...data.events].sort((a, b) => a.year - b.year).map((e) => e.label).join(" | ");
   }
+  if (game === "carte-muette") return data.code;
   return data.text;
 }
 
@@ -650,6 +656,59 @@ function validateTimelineItem() {
   itemContainer.appendChild(correctionsEl);
 
   finishRevisionItem(allCorrect, itemKeyFor(currentGame, data));
+}
+
+// ---- Renderer : Carte muette (Europe) ----
+
+let mapState = null;
+
+async function loadEuropeMapInto(container) {
+  const res = await fetch("map-europe.svg");
+  const svgText = await res.text();
+  container.innerHTML = svgText;
+}
+
+function renderCarteMuetteItem(row) {
+  const data = row.item_data;
+  playInstructions.textContent = `${t("mapClickOn")} ${data.name}`;
+  itemContainer.innerHTML = `<div class="map-wrap" id="revision-map-wrap"></div>`;
+  mapState = { data, answered: false };
+
+  const wrap = document.getElementById("revision-map-wrap");
+  loadEuropeMapInto(wrap).then(() => {
+    wrap.querySelectorAll(".map-country").forEach((g) => {
+      g.addEventListener("click", () => selectCarteMuetteCountry(g.id));
+    });
+  });
+
+  validateBtn.style.display = "none";
+  nextBtn.style.display = "none";
+}
+
+function selectCarteMuetteCountry(clickedCode) {
+  if (mapState.answered) return;
+  mapState.answered = true;
+
+  const { data } = mapState;
+  const wrap = document.getElementById("revision-map-wrap");
+  const isCorrect = clickedCode === data.code;
+
+  wrap.querySelectorAll(".map-country").forEach((g) => g.classList.add("disabled"));
+  const targetEl = wrap.querySelector(`#${data.code}`);
+  if (targetEl) targetEl.classList.add("correct");
+  if (!isCorrect) {
+    const clickedEl = wrap.querySelector(`#${clickedCode}`);
+    if (clickedEl) clickedEl.classList.add("wrong");
+  }
+
+  const feedbackEl = document.createElement("div");
+  feedbackEl.className = "feedback show";
+  feedbackEl.innerHTML = isCorrect
+    ? `${t("wellSpotted")} ${data.name} ✓`
+    : `${t("notQuite")} ${t("exactSentenceWas")} <strong>${data.name}</strong>`;
+  itemContainer.appendChild(feedbackEl);
+
+  finishRevisionItem(isCorrect, itemKeyFor(currentGame, data));
 }
 
 // ---- Init ----
