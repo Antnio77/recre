@@ -78,8 +78,9 @@ let order = [];
 let current = 0;
 let score = 0;
 let validated = false;
-let pool = [];
-let placed = [];
+let roundEvents = [];    // events for the current round: { id, label, year }
+let slotAssignment = []; // slotAssignment[i] = event id placed in slot i, or null
+let poolIds = [];        // ids of events not yet placed
 
 const difficultyScreen = document.getElementById("difficulty-screen");
 const poolEl = document.getElementById("timeline-pool");
@@ -138,90 +139,171 @@ function renderRound() {
   correctionsEl.classList.remove("show");
   correctionsEl.innerHTML = "";
   validateBtn.style.display = "inline-block";
+  validateBtn.disabled = true;
   nextBtn.style.display = "none";
 
   const data = rounds[order[current]];
-  pool = shuffle(data.events.map((e, i) => ({ ...e, id: i })));
-  placed = [];
+  roundEvents = data.events.map((e, i) => ({ ...e, id: i }));
+  slotAssignment = new Array(roundEvents.length).fill(null);
+  poolIds = shuffle(roundEvents.map((e) => e.id));
+
+  renderTimeline();
   renderPool();
-  renderSlots(data.events.length);
 
   progressFill.style.width = `${(current / order.length) * 100}%`;
   progressLabel.textContent = `${t("levelWord")} ${difficultyLabel(difficulty)} · ${t("sentenceWord")} ${current + 1} / ${order.length} · ${t("scoreWord")} : ${score}`;
 }
 
+function eventById(id) {
+  return roundEvents.find((e) => e.id === id);
+}
+
 function renderPool() {
   poolEl.innerHTML = "";
-  pool.forEach((ev) => {
-    const btn = document.createElement("button");
-    btn.className = "timeline-pool-btn";
-    btn.type = "button";
-    btn.textContent = ev.label;
-    btn.addEventListener("click", () => placeEvent(ev.id));
-    poolEl.appendChild(btn);
+  poolIds.forEach((id) => {
+    poolEl.appendChild(createChip(id, null));
   });
 }
 
-function renderSlots(total) {
+function renderTimeline() {
   slotsEl.innerHTML = "";
-  for (let i = 0; i < total; i++) {
+  slotAssignment.forEach((eventId, i) => {
+    const item = document.createElement("div");
+    item.className = "timeline-item";
+
+    const dot = document.createElement("div");
+    dot.className = "timeline-dot";
+    item.appendChild(dot);
+
     const slot = document.createElement("div");
     slot.className = "timeline-slot";
+    slot.dataset.index = i;
 
-    const numEl = document.createElement("span");
-    numEl.className = "timeline-slot-num";
-    numEl.textContent = i + 1;
-    slot.appendChild(numEl);
-
-    const labelEl = document.createElement("span");
-    if (i < placed.length) {
-      slot.classList.add("filled");
-      labelEl.textContent = placed[i].label;
-      slot.addEventListener("click", () => removeEvent(i));
+    if (eventId !== null) {
+      slot.appendChild(createChip(eventId, i));
     } else {
-      labelEl.className = "timeline-slot-empty-hint";
-      labelEl.textContent = t("timelineEmptySlot");
+      const hint = document.createElement("span");
+      hint.className = "timeline-slot-hint";
+      hint.textContent = i + 1;
+      slot.appendChild(hint);
     }
-    slot.appendChild(labelEl);
-    slotsEl.appendChild(slot);
+    item.appendChild(slot);
+    slotsEl.appendChild(item);
+  });
+}
+
+// Une étiquette : cliquable au pointerdown, le drag suit ensuite le
+// curseur/doigt via pointermove sur la fenêtre (pointer events, marche
+// à la souris comme au toucher).
+function createChip(eventId, fromSlot) {
+  const ev = eventById(eventId);
+  const chip = document.createElement("button");
+  chip.type = "button";
+  chip.className = "timeline-pool-btn";
+  chip.textContent = ev.label;
+  chip.addEventListener("pointerdown", (e) => {
+    if (validated) return;
+    e.preventDefault();
+    startDrag(eventId, fromSlot, e.clientX, e.clientY, chip);
+  });
+  return chip;
+}
+
+function startDrag(eventId, fromSlot, x, y, sourceEl) {
+  sourceEl.classList.add("dragging");
+
+  const ghost = document.createElement("div");
+  ghost.className = "timeline-pool-btn timeline-ghost";
+  ghost.textContent = eventById(eventId).label;
+  document.body.appendChild(ghost);
+  moveGhost(ghost, x, y);
+
+  function cleanup() {
+    window.removeEventListener("pointermove", onMove);
+    window.removeEventListener("pointerup", onUp);
+    window.removeEventListener("pointercancel", onCancel);
+    ghost.remove();
+    clearDropHighlight();
+    sourceEl.classList.remove("dragging");
   }
-  validateBtn.disabled = placed.length < total;
+  function onMove(e) {
+    moveGhost(ghost, e.clientX, e.clientY);
+    highlightDropTarget(e.clientX, e.clientY);
+  }
+  function onUp(e) {
+    cleanup();
+    handleDrop(eventId, fromSlot, e.clientX, e.clientY);
+  }
+  function onCancel() {
+    cleanup();
+  }
+
+  window.addEventListener("pointermove", onMove);
+  window.addEventListener("pointerup", onUp);
+  window.addEventListener("pointercancel", onCancel);
 }
 
-function placeEvent(id) {
-  if (validated) return;
-  const idx = pool.findIndex((e) => e.id === id);
-  if (idx === -1) return;
-  const [ev] = pool.splice(idx, 1);
-  placed.push(ev);
-  renderPool();
-  renderSlots(placed.length + pool.length);
+function moveGhost(ghost, x, y) {
+  ghost.style.left = `${x}px`;
+  ghost.style.top = `${y}px`;
 }
 
-function removeEvent(index) {
-  if (validated) return;
-  const [ev] = placed.splice(index, 1);
-  pool.push(ev);
+function highlightDropTarget(x, y) {
+  clearDropHighlight();
+  const el = document.elementFromPoint(x, y);
+  const slot = el && el.closest(".timeline-slot");
+  if (slot) slot.classList.add("drag-over");
+}
+
+function clearDropHighlight() {
+  slotsEl.querySelectorAll(".timeline-slot.drag-over").forEach((s) => s.classList.remove("drag-over"));
+}
+
+function handleDrop(eventId, fromSlot, x, y) {
+  const el = document.elementFromPoint(x, y);
+  const slotEl = el && el.closest(".timeline-slot");
+  const droppedOnPool = el && el.closest("#timeline-pool");
+
+  if (slotEl) {
+    const toIndex = Number(slotEl.dataset.index);
+    if (toIndex !== fromSlot) {
+      const displaced = slotAssignment[toIndex];
+      if (fromSlot !== null) {
+        slotAssignment[fromSlot] = displaced;
+      } else {
+        poolIds = poolIds.filter((id) => id !== eventId);
+        if (displaced !== null) poolIds.push(displaced);
+      }
+      slotAssignment[toIndex] = eventId;
+    }
+  } else if (droppedOnPool && fromSlot !== null) {
+    slotAssignment[fromSlot] = null;
+    poolIds.push(eventId);
+  }
+  // Sinon : lâché nulle part de valide -> aucun changement d'état, l'étiquette
+  // revient visuellement à sa place au rendu suivant.
+
+  renderTimeline();
   renderPool();
-  renderSlots(placed.length + pool.length);
+  validateBtn.disabled = poolIds.length > 0;
 }
 
 function validate() {
-  if (validated) return;
-  const data = rounds[order[current]];
-  if (placed.length < data.events.length) return;
+  if (validated || poolIds.length > 0) return;
   validated = true;
 
-  const correctOrder = [...data.events].sort((a, b) => a.year - b.year);
+  const correctOrder = [...roundEvents].sort((a, b) => a.year - b.year);
   let allCorrect = true;
   const slotEls = slotsEl.querySelectorAll(".timeline-slot");
-  placed.forEach((ev, i) => {
+  slotAssignment.forEach((eventId, i) => {
+    const ev = eventById(eventId);
     const isRight = ev.label === correctOrder[i].label && ev.year === correctOrder[i].year;
     slotEls[i].classList.add(isRight ? "correct" : "wrong");
     if (!isRight) allCorrect = false;
   });
 
   const itemKey = correctOrder.map((e) => e.label).join(" | ");
+  const data = rounds[order[current]];
   if (allCorrect) {
     score++;
     if (window.clearMistake) clearMistake("frise-chronologique", itemKey);

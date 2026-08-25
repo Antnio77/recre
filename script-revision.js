@@ -550,7 +550,7 @@ function selectMultipleChoiceAnswer(game, isCorrect, clickedBtn, data) {
   finishRevisionItem(isCorrect, itemKeyFor(game, data));
 }
 
-// ---- Renderer : Frise chronologique ----
+// ---- Renderer : Frise chronologique (glisser-déposer, comme le jeu) ----
 
 let timelineState = null;
 
@@ -562,10 +562,12 @@ function formatYear(year) {
 function renderTimelineItem(row) {
   const data = row.item_data;
   playInstructions.textContent = t("timelineInstructions");
+
+  const roundEvents = data.events.map((e, i) => ({ ...e, id: i }));
   timelineState = {
-    data,
-    pool: shuffle(data.events.map((e, i) => ({ ...e, id: i }))),
-    placed: [],
+    roundEvents,
+    slotAssignment: new Array(roundEvents.length).fill(null),
+    poolIds: shuffle(roundEvents.map((e) => e.id)),
   };
 
   itemContainer.innerHTML = `
@@ -573,77 +575,138 @@ function renderTimelineItem(row) {
     <div class="timeline-pool" id="revision-timeline-pool"></div>
   `;
 
-  renderTimelinePool();
-  renderTimelineSlots(data.events.length);
+  renderTimelineDOM();
+  validateBtn.disabled = true;
 }
 
-function renderTimelinePool() {
-  const poolEl = document.getElementById("revision-timeline-pool");
-  poolEl.innerHTML = "";
-  timelineState.pool.forEach((ev) => {
-    const btn = document.createElement("button");
-    btn.className = "timeline-pool-btn";
-    btn.type = "button";
-    btn.textContent = ev.label;
-    btn.addEventListener("click", () => placeTimelineEvent(ev.id));
-    poolEl.appendChild(btn);
-  });
+function timelineEventById(id) {
+  return timelineState.roundEvents.find((e) => e.id === id);
 }
 
-function renderTimelineSlots(total) {
+function renderTimelineDOM() {
   const slotsEl = document.getElementById("revision-timeline-slots");
+  const poolEl = document.getElementById("revision-timeline-pool");
+  const { slotAssignment, poolIds } = timelineState;
+
   slotsEl.innerHTML = "";
-  const { placed } = timelineState;
-  for (let i = 0; i < total; i++) {
+  slotAssignment.forEach((eventId, i) => {
+    const item = document.createElement("div");
+    item.className = "timeline-item";
+
+    const dot = document.createElement("div");
+    dot.className = "timeline-dot";
+    item.appendChild(dot);
+
     const slot = document.createElement("div");
     slot.className = "timeline-slot";
+    slot.dataset.index = i;
 
-    const numEl = document.createElement("span");
-    numEl.className = "timeline-slot-num";
-    numEl.textContent = i + 1;
-    slot.appendChild(numEl);
-
-    const labelEl = document.createElement("span");
-    if (i < placed.length) {
-      slot.classList.add("filled");
-      labelEl.textContent = placed[i].label;
-      slot.addEventListener("click", () => removeTimelineEvent(i));
+    if (eventId !== null) {
+      slot.appendChild(createTimelineChip(eventId, i));
     } else {
-      labelEl.className = "timeline-slot-empty-hint";
-      labelEl.textContent = t("timelineEmptySlot");
+      const hint = document.createElement("span");
+      hint.className = "timeline-slot-hint";
+      hint.textContent = i + 1;
+      slot.appendChild(hint);
     }
-    slot.appendChild(labelEl);
-    slotsEl.appendChild(slot);
+    item.appendChild(slot);
+    slotsEl.appendChild(item);
+  });
+
+  poolEl.innerHTML = "";
+  poolIds.forEach((id) => poolEl.appendChild(createTimelineChip(id, null)));
+}
+
+function createTimelineChip(eventId, fromSlot) {
+  const chip = document.createElement("button");
+  chip.type = "button";
+  chip.className = "timeline-pool-btn";
+  chip.textContent = timelineEventById(eventId).label;
+  chip.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    startTimelineDrag(eventId, fromSlot, e.clientX, e.clientY, chip);
+  });
+  return chip;
+}
+
+function startTimelineDrag(eventId, fromSlot, x, y, sourceEl) {
+  sourceEl.classList.add("dragging");
+
+  const ghost = document.createElement("div");
+  ghost.className = "timeline-pool-btn timeline-ghost";
+  ghost.textContent = timelineEventById(eventId).label;
+  document.body.appendChild(ghost);
+  ghost.style.left = `${x}px`;
+  ghost.style.top = `${y}px`;
+
+  function clearHighlight() {
+    document.querySelectorAll("#revision-timeline-slots .timeline-slot.drag-over").forEach((s) => s.classList.remove("drag-over"));
   }
-  validateBtn.disabled = placed.length < total;
+  function cleanup() {
+    window.removeEventListener("pointermove", onMove);
+    window.removeEventListener("pointerup", onUp);
+    window.removeEventListener("pointercancel", onCancel);
+    ghost.remove();
+    clearHighlight();
+    sourceEl.classList.remove("dragging");
+  }
+  function onMove(e) {
+    ghost.style.left = `${e.clientX}px`;
+    ghost.style.top = `${e.clientY}px`;
+    clearHighlight();
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const slot = el && el.closest(".timeline-slot");
+    if (slot) slot.classList.add("drag-over");
+  }
+  function onUp(e) {
+    cleanup();
+    handleTimelineDrop(eventId, fromSlot, e.clientX, e.clientY);
+  }
+  function onCancel() {
+    cleanup();
+  }
+
+  window.addEventListener("pointermove", onMove);
+  window.addEventListener("pointerup", onUp);
+  window.addEventListener("pointercancel", onCancel);
 }
 
-function placeTimelineEvent(id) {
-  const { pool, placed } = timelineState;
-  const idx = pool.findIndex((e) => e.id === id);
-  if (idx === -1) return;
-  const [ev] = pool.splice(idx, 1);
-  placed.push(ev);
-  renderTimelinePool();
-  renderTimelineSlots(placed.length + pool.length);
-}
+function handleTimelineDrop(eventId, fromSlot, x, y) {
+  const el = document.elementFromPoint(x, y);
+  const slotEl = el && el.closest(".timeline-slot");
+  const droppedOnPool = el && el.closest("#revision-timeline-pool");
+  const { slotAssignment } = timelineState;
 
-function removeTimelineEvent(index) {
-  const { pool, placed } = timelineState;
-  const [ev] = placed.splice(index, 1);
-  pool.push(ev);
-  renderTimelinePool();
-  renderTimelineSlots(placed.length + pool.length);
+  if (slotEl) {
+    const toIndex = Number(slotEl.dataset.index);
+    if (toIndex !== fromSlot) {
+      const displaced = slotAssignment[toIndex];
+      if (fromSlot !== null) {
+        slotAssignment[fromSlot] = displaced;
+      } else {
+        timelineState.poolIds = timelineState.poolIds.filter((id) => id !== eventId);
+        if (displaced !== null) timelineState.poolIds.push(displaced);
+      }
+      slotAssignment[toIndex] = eventId;
+    }
+  } else if (droppedOnPool && fromSlot !== null) {
+    slotAssignment[fromSlot] = null;
+    timelineState.poolIds.push(eventId);
+  }
+
+  renderTimelineDOM();
+  validateBtn.disabled = timelineState.poolIds.length > 0;
 }
 
 function validateTimelineItem() {
-  const { data, placed } = timelineState;
-  if (placed.length < data.events.length) return;
+  const { roundEvents, slotAssignment, poolIds } = timelineState;
+  if (poolIds.length > 0) return;
 
-  const correctOrder = [...data.events].sort((a, b) => a.year - b.year);
+  const correctOrder = [...roundEvents].sort((a, b) => a.year - b.year);
   let allCorrect = true;
   const slotEls = document.querySelectorAll("#revision-timeline-slots .timeline-slot");
-  placed.forEach((ev, i) => {
+  slotAssignment.forEach((eventId, i) => {
+    const ev = timelineEventById(eventId);
     const isRight = ev.label === correctOrder[i].label && ev.year === correctOrder[i].year;
     slotEls[i].classList.add(isRight ? "correct" : "wrong");
     if (!isRight) allCorrect = false;
@@ -655,7 +718,7 @@ function validateTimelineItem() {
   correctionsEl.innerHTML = `${allCorrect ? t("perfectExclaim") : t("notQuite")}<br>${t("timelineCorrectOrder")}<br>${list}`;
   itemContainer.appendChild(correctionsEl);
 
-  finishRevisionItem(allCorrect, itemKeyFor(currentGame, data));
+  finishRevisionItem(allCorrect, itemKeyFor(currentGame, { events: roundEvents }));
 }
 
 // ---- Renderer : Carte muette (Europe) ----

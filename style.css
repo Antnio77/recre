@@ -1248,63 +1248,117 @@ a{ color: inherit; text-decoration: none; }
 .legal-content li{ margin-bottom:6px; }
 .legal-content strong{ color: var(--ink); }
 .legal-content a{ color: var(--indigo); text-decoration: underline; }
-/* Frise chronologique - mecanique reutilisable pour d'autres frises */
+/* Frise chronologique - vraie frise horizontale, etiquettes glissables
+   (pointer events, marche a la souris et au toucher) - mecanique
+   reutilisable pour d'autres frises */
 .timeline-slots{
-  display:flex;
-  flex-direction:column;
-  gap: 8px;
-  margin-bottom: 22px;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 44px 0 28px;
+  padding-top: 14px;
+}
+.timeline-slots::before{
+  content: "";
+  position: absolute;
+  top: 20px;
+  left: 0;
+  right: 12px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--teal), var(--indigo));
+  border-radius: 2px;
+}
+.timeline-slots::after{
+  content: "";
+  position: absolute;
+  top: 14.5px;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 12px solid var(--indigo);
+}
+.timeline-item{
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+.timeline-dot{
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--indigo);
+  border: 3px solid var(--card-bg);
+  box-shadow: 0 0 0 2px var(--indigo);
+  flex-shrink: 0;
 }
 .timeline-slot{
-  display:flex;
-  align-items:center;
-  gap: 14px;
-  padding: 12px 16px;
+  width: 100%;
+  min-height: 74px;
   border-radius: var(--radius-md);
   border: 2px dashed #E7E5DD;
   background: #FBFAF7;
-  min-height: 20px;
-  font-size: 14px;
-}
-.timeline-slot.filled{
-  border-style: solid;
-  cursor: pointer;
-  transition: border-color .12s ease;
-}
-.timeline-slot.filled:hover{ border-color: var(--indigo); }
-.timeline-slot-num{
-  font-family: 'Baloo 2', sans-serif;
-  font-weight: 800;
-  color: var(--ink-soft);
-  width: 22px;
-  flex-shrink: 0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   text-align:center;
+  padding: 6px;
+  transition: border-color .12s ease, background .12s ease;
 }
-.timeline-slot.correct{ background: #DFF3E4; border-color: #4CAF6D; }
-.timeline-slot.correct .timeline-slot-num{ color: #2C7A46; }
-.timeline-slot.wrong{ background: #FBE0DF; border-color: var(--coral); }
-.timeline-slot.wrong .timeline-slot-num{ color: #A83D3B; }
-.timeline-slot-empty-hint{ color: var(--ink-soft); font-style: italic; font-size: 13px; }
+.timeline-slot.drag-over{ border-color: var(--indigo); background:#EDEBFF; }
+.timeline-slot-hint{
+  color: var(--ink-soft);
+  font-size: 20px;
+  font-weight: 800;
+  font-family: 'Baloo 2', sans-serif;
+}
+.timeline-slot.correct{ background: #DFF3E4; border-color: #4CAF6D; border-style: solid; }
+.timeline-slot.wrong{ background: #FBE0DF; border-color: var(--coral); border-style: solid; }
 
 .timeline-pool{
   display:flex;
   flex-wrap:wrap;
   gap: 8px;
   justify-content:center;
+  min-height: 46px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: #F6F5F0;
   margin-bottom: 8px;
 }
 .timeline-pool-btn{
   border: 2px solid #E7E5DD;
-  background: #FBFAF7;
+  background: var(--card-bg);
   border-radius: 12px;
   padding: 8px 14px;
-  cursor:pointer;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
   font: inherit;
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--ink);
-  transition: all .12s ease;
+  box-shadow: 0 2px 6px -2px rgba(43,45,66,0.15);
+  transition: border-color .12s ease, opacity .12s ease;
 }
-.timeline-pool-btn:hover{ border-color: var(--indigo); background:#EDEBFF; }
+.timeline-pool-btn:hover{ border-color: var(--indigo); }
+.timeline-pool-btn.dragging{ opacity: 0.35; }
+.timeline-slot .timeline-pool-btn{ width: 100%; box-shadow: none; cursor: grab; }
+.timeline-ghost{
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+  transform: translate(-50%, -50%) rotate(-2deg);
+  box-shadow: 0 12px 24px -8px rgba(43,45,66,0.35);
+  opacity: 0.96;
+}
 
 /* Carte muette */
 .map-wrap{
@@ -1335,6 +1389,11 @@ a{ color: inherit; text-decoration: none; }
 /* Tout ce bloc ne s'applique que sous 640px de large : le rendu PC
    reste strictement identique à avant. */
 @media (max-width: 640px){
+
+  /* --- Frise chronologique : la ligne scrolle horizontalement plutôt
+     que d'écraser les étiquettes quand il y a beaucoup d'événements --- */
+  .timeline-slots{ overflow-x: auto; padding-bottom: 10px; }
+  .timeline-item{ flex: 0 0 92px; }
 
   /* --- Menu hamburger dans le header --- */
   .mobile-menu-btn{ display:flex; }
