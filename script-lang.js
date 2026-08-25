@@ -246,6 +246,17 @@ const translations = {
     histgeoHardDesc: "Niveau 3e-2nde : Guerre froide, Union européenne, mondialisation",
     histgeoInstructions: "Clique sur la bonne réponse à la question.",
     resultSubtext12: "Bonnes réponses trouvées",
+
+    tile13Title: "Frise chronologique",
+    tile13Desc: "Remets les événements dans l'ordre chronologique, du plus ancien au plus récent.",
+    gameTitle13: "Frise chronologique",
+    timelineEasyDesc: "Grands repères très espacés (Antiquité → aujourd'hui)",
+    timelineMediumDesc: "Périodes plus resserrées : Révolution, guerres mondiales, décolonisation",
+    timelineHardDesc: "Chronologies denses : Guerre froide, construction européenne, Antiquité romaine",
+    timelineInstructions: "Clique sur les événements dans l'ordre chronologique, du plus ancien au plus récent.",
+    timelineEmptySlot: "?",
+    timelineCorrectOrder: "Ordre chronologique correct :",
+    resultSubtext13: "Frises correctement ordonnées",
   },
   en: {
     footer: "La Récré — a little corner to unwind",
@@ -494,6 +505,17 @@ const translations = {
     histgeoHardDesc: "Grade 9-10 level: Cold War, European Union, globalization",
     histgeoInstructions: "Click the correct answer to the question.",
     resultSubtext12: "Correct answers found",
+
+    tile13Title: "Timeline Challenge",
+    tile13Desc: "Put historical events back in chronological order, from oldest to most recent.",
+    gameTitle13: "Timeline Challenge",
+    timelineEasyDesc: "Big, widely-spaced landmarks (Antiquity → today)",
+    timelineMediumDesc: "Tighter periods: the Revolution, world wars, decolonization",
+    timelineHardDesc: "Dense timelines: Cold War, European construction, Roman Antiquity",
+    timelineInstructions: "Click the events in chronological order, from oldest to most recent.",
+    timelineEmptySlot: "?",
+    timelineCorrectOrder: "Correct chronological order:",
+    resultSubtext13: "Timelines correctly ordered",
   },
 };
 

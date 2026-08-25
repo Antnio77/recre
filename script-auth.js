@@ -30,6 +30,7 @@ function gameDisplayName(game) {
   if (game === "geometrie-eclair") return t("tile10Title");
   if (game === "quiz-maths-3eme") return t("tile11Title");
   if (game === "histoire-geo") return t("tile12Title");
+  if (game === "frise-chronologique") return t("tile13Title");
   return game;
 }
 

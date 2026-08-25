@@ -3,7 +3,7 @@ let strengthsChartInstance = null;
 let lastScores = null;
 
 const LANG_GAMES = ["orthographe", "dictee", "bonne-phrase", "conjugaison-eclair", "texte-a-trous"];
-const HISTGEO_GAMES = ["histoire-geo"];
+const HISTGEO_GAMES = ["histoire-geo", "frise-chronologique"];
 const DIFFICULTY_WEIGHT = { facile: 0.6, moyen: 0.8, difficile: 1 };
 
 function categorizeScore(row) {

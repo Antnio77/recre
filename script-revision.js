@@ -66,6 +66,10 @@ const RENDERERS = {
     displayField: "question",
     displayStyle: "font-size:19px; font-weight:600; text-align:left;",
   }),
+  "frise-chronologique": {
+    render: renderTimelineItem,
+    validate: validateTimelineItem,
+  },
 };
 
 const GAME_EMOJIS = {
@@ -81,6 +85,7 @@ const GAME_EMOJIS = {
   "geometrie-eclair": "📐",
   "quiz-maths-3eme": "🎓",
   "histoire-geo": "🌍",
+  "frise-chronologique": "🕰️",
 };
 
 let mistakesByGame = {};
@@ -167,6 +172,7 @@ function renderCurrentItem() {
   progressLabel.textContent = `${t("revisionRemaining")} ${queue.length - queueIndex} · ${t("levelWord")} ${difficultyLabel(row.difficulty)}`;
   actionsEl.style.display = "flex";
   validateBtn.style.display = "inline-block";
+  validateBtn.disabled = false;
   nextBtn.style.display = "none";
   RENDERERS[currentGame].render(row);
 }
@@ -330,6 +336,9 @@ function itemKeyFor(game, data) {
   if (game === "calcul-mental" || game === "bon-resultat-maths") return data.expr;
   if (game === "texte-a-trous") return data.sentence;
   if (game === "quiz-maths-3eme" || game === "histoire-geo") return data.question;
+  if (game === "frise-chronologique") {
+    return [...data.events].sort((a, b) => a.year - b.year).map((e) => e.label).join(" | ");
+  }
   return data.text;
 }
 
@@ -533,6 +542,114 @@ function selectMultipleChoiceAnswer(game, isCorrect, clickedBtn, data) {
   feedbackEl.classList.add("show");
 
   finishRevisionItem(isCorrect, itemKeyFor(game, data));
+}
+
+// ---- Renderer : Frise chronologique ----
+
+let timelineState = null;
+
+function formatYear(year) {
+  if (year < 0) return currentLang === "en" ? `${-year} BCE` : `${-year} av. J.-C.`;
+  return `${year}`;
+}
+
+function renderTimelineItem(row) {
+  const data = row.item_data;
+  playInstructions.textContent = t("timelineInstructions");
+  timelineState = {
+    data,
+    pool: shuffle(data.events.map((e, i) => ({ ...e, id: i }))),
+    placed: [],
+  };
+
+  itemContainer.innerHTML = `
+    <div class="timeline-slots" id="revision-timeline-slots"></div>
+    <div class="timeline-pool" id="revision-timeline-pool"></div>
+  `;
+
+  renderTimelinePool();
+  renderTimelineSlots(data.events.length);
+}
+
+function renderTimelinePool() {
+  const poolEl = document.getElementById("revision-timeline-pool");
+  poolEl.innerHTML = "";
+  timelineState.pool.forEach((ev) => {
+    const btn = document.createElement("button");
+    btn.className = "timeline-pool-btn";
+    btn.type = "button";
+    btn.textContent = ev.label;
+    btn.addEventListener("click", () => placeTimelineEvent(ev.id));
+    poolEl.appendChild(btn);
+  });
+}
+
+function renderTimelineSlots(total) {
+  const slotsEl = document.getElementById("revision-timeline-slots");
+  slotsEl.innerHTML = "";
+  const { placed } = timelineState;
+  for (let i = 0; i < total; i++) {
+    const slot = document.createElement("div");
+    slot.className = "timeline-slot";
+
+    const numEl = document.createElement("span");
+    numEl.className = "timeline-slot-num";
+    numEl.textContent = i + 1;
+    slot.appendChild(numEl);
+
+    const labelEl = document.createElement("span");
+    if (i < placed.length) {
+      slot.classList.add("filled");
+      labelEl.textContent = placed[i].label;
+      slot.addEventListener("click", () => removeTimelineEvent(i));
+    } else {
+      labelEl.className = "timeline-slot-empty-hint";
+      labelEl.textContent = t("timelineEmptySlot");
+    }
+    slot.appendChild(labelEl);
+    slotsEl.appendChild(slot);
+  }
+  validateBtn.disabled = placed.length < total;
+}
+
+function placeTimelineEvent(id) {
+  const { pool, placed } = timelineState;
+  const idx = pool.findIndex((e) => e.id === id);
+  if (idx === -1) return;
+  const [ev] = pool.splice(idx, 1);
+  placed.push(ev);
+  renderTimelinePool();
+  renderTimelineSlots(placed.length + pool.length);
+}
+
+function removeTimelineEvent(index) {
+  const { pool, placed } = timelineState;
+  const [ev] = placed.splice(index, 1);
+  pool.push(ev);
+  renderTimelinePool();
+  renderTimelineSlots(placed.length + pool.length);
+}
+
+function validateTimelineItem() {
+  const { data, placed } = timelineState;
+  if (placed.length < data.events.length) return;
+
+  const correctOrder = [...data.events].sort((a, b) => a.year - b.year);
+  let allCorrect = true;
+  const slotEls = document.querySelectorAll("#revision-timeline-slots .timeline-slot");
+  placed.forEach((ev, i) => {
+    const isRight = ev.label === correctOrder[i].label && ev.year === correctOrder[i].year;
+    slotEls[i].classList.add(isRight ? "correct" : "wrong");
+    if (!isRight) allCorrect = false;
+  });
+
+  const correctionsEl = document.createElement("div");
+  correctionsEl.className = "corrections show";
+  const list = correctOrder.map((e, i) => `${i + 1}. ${e.label} (${formatYear(e.year)})`).join("<br>");
+  correctionsEl.innerHTML = `${allCorrect ? t("perfectExclaim") : t("notQuite")}<br>${t("timelineCorrectOrder")}<br>${list}`;
+  itemContainer.appendChild(correctionsEl);
+
+  finishRevisionItem(allCorrect, itemKeyFor(currentGame, data));
 }
 
 // ---- Init ----
