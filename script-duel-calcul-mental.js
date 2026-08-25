@@ -96,6 +96,9 @@ document.querySelectorAll("#duel-create-screen .difficulty-btn").forEach((btn) =
 
 async function createDuel(difficulty) {
   if (window.playSound) playSound("click");
+  const createError = document.getElementById("duel-create-error");
+  createError.classList.remove("show");
+
   const pool = levels[difficulty];
   const chosen = shuffle(pool.map((_, i) => i)).slice(0, Math.min(SESSION_LENGTH, pool.length)).map((i) => pool[i]);
 
@@ -106,6 +109,8 @@ async function createDuel(difficulty) {
 
   if (error || !data || !data[0]) {
     console.error("Erreur create_duel :", error);
+    if (window.playSound) playSound("wrong");
+    createError.classList.add("show");
     return;
   }
 
