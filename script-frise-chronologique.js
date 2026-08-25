@@ -112,6 +112,7 @@ function formatYear(year) {
 
 function chooseDifficulty(level) {
   difficulty = level;
+  if (window.playSound) playSound("click");
   rounds = levels[currentLang][level];
   difficultyScreen.style.display = "none";
   resultScreen.style.display = "none";
@@ -302,6 +303,8 @@ function validate() {
     if (!isRight) allCorrect = false;
   });
 
+  if (window.playSound) playSound(allCorrect ? "correct" : "wrong");
+
   const itemKey = correctOrder.map((e) => e.label).join(" | ");
   const data = rounds[order[current]];
   if (allCorrect) {
@@ -332,6 +335,7 @@ function nextRound() {
 function showResult() {
   gameCard.style.display = "none";
   resultScreen.style.display = "block";
+  if (window.playSound) playSound("success");
   progressFill.style.width = "100%";
   finalScore.textContent = `${score} / ${order.length}`;
   if (window.saveScore) window.saveScore("frise-chronologique", difficulty, score, order.length);

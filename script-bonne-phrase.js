@@ -109,6 +109,7 @@ function shuffle(arr) {
 
 function chooseDifficulty(level) {
   difficulty = level;
+  if (window.playSound) playSound("click");
   rounds = levels[currentLang][level];
   difficultyScreen.style.display = "none";
   resultScreen.style.display = "none";
@@ -158,6 +159,7 @@ function renderRound() {
 function selectChoice(isCorrect, clickedBtn, explanation) {
   if (answered) return;
   answered = true;
+  if (window.playSound) playSound(isCorrect ? "correct" : "wrong");
 
   const allBtns = choicesEl.querySelectorAll(".choice-btn");
   allBtns.forEach((btn) => {
@@ -195,6 +197,7 @@ function nextRound() {
 function showResult() {
   gameCard.style.display = "none";
   resultScreen.style.display = "block";
+  if (window.playSound) playSound("success");
   progressFill.style.width = "100%";
   finalScore.textContent = `${score} / ${order.length}`;
   if (window.saveScore) window.saveScore("bonne-phrase", difficulty, score, order.length);

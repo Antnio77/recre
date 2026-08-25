@@ -156,6 +156,7 @@ function speak(text) {
 
 function chooseDifficulty(level) {
   difficulty = level;
+  if (window.playSound) playSound("click");
   sentences = levels[currentLang][level];
   difficultyScreen.style.display = "none";
   resultScreen.style.display = "none";
@@ -221,6 +222,7 @@ function validate() {
     );
   }
 
+  if (window.playSound) playSound(allCorrect ? "correct" : "wrong");
   if (allCorrect) {
     score++;
     if (window.clearMistake) clearMistake("dictee", target);
@@ -251,6 +253,7 @@ function nextSentence() {
 function showResult() {
   gameCard.style.display = "none";
   resultScreen.style.display = "block";
+  if (window.playSound) playSound("success");
   progressFill.style.width = "100%";
   finalScore.textContent = `${score} / ${order.length}`;
   if (window.saveScore) window.saveScore("dictee", difficulty, score, order.length);

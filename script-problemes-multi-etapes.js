@@ -104,6 +104,7 @@ function shuffle(arr) {
 
 function chooseDifficulty(level) {
   difficulty = level;
+  if (window.playSound) playSound("click");
   sentences = levels[currentLang][level];
   difficultyScreen.style.display = "none";
   resultScreen.style.display = "none";
@@ -152,6 +153,7 @@ function validate() {
   const typed = answerInput.value.trim().replace(",", ".");
   const typedNum = parseFloat(typed);
   const isCorrect = !isNaN(typedNum) && Math.abs(typedNum - data.answer) < 0.01;
+  if (window.playSound) playSound(isCorrect ? "correct" : "wrong");
 
   if (isCorrect) {
     score++;
@@ -182,6 +184,7 @@ function nextProblem() {
 function showResult() {
   gameCard.style.display = "none";
   resultScreen.style.display = "block";
+  if (window.playSound) playSound("success");
   progressFill.style.width = "100%";
   finalScore.textContent = `${score} / ${order.length}`;
   if (window.saveScore) window.saveScore("problemes-multi-etapes", difficulty, score, order.length);

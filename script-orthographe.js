@@ -134,6 +134,7 @@ function normalizeWord(w) {
 
 function chooseDifficulty(level) {
   difficulty = level;
+  if (window.playSound) playSound("click");
   sentences = levels[currentLang][level];
   difficultyScreen.style.display = "none";
   resultScreen.style.display = "none";
@@ -245,6 +246,7 @@ function validate() {
   });
 
   const roundSuccess = allCorrected && noWrongPicks;
+  if (window.playSound) playSound(roundSuccess ? "correct" : "wrong");
   if (roundSuccess) {
     score++;
     if (window.clearMistake) clearMistake("orthographe", data.text);
@@ -293,6 +295,7 @@ function nextSentence() {
 function showResult() {
   gameCard.style.display = "none";
   resultScreen.style.display = "block";
+  if (window.playSound) playSound("success");
   progressFill.style.width = "100%";
   finalScore.textContent = `${score} / ${order.length}`;
   if (window.saveScore) window.saveScore("orthographe", difficulty, score, order.length);

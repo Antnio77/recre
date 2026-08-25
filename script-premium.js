@@ -46,6 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.disabled = false;
     btn.textContent = originalText;
     if (success) {
+      if (window.playSound) playSound("success");
       message.textContent = t("premiumCodeSuccess");
       message.className = "auth-error show";
       message.style.background = "#DFF3E4";
@@ -53,6 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
       input.value = "";
       updatePremiumBadge();
     } else {
+      if (window.playSound) playSound("wrong");
       message.textContent = t("premiumCodeError");
       message.className = "auth-error show";
       message.style.background = "";

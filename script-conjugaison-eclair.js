@@ -116,6 +116,7 @@ function normalizeAnswer(w) {
 
 function chooseDifficulty(level) {
   difficulty = level;
+  if (window.playSound) playSound("click");
   sentences = levels[currentLang][level];
   difficultyScreen.style.display = "none";
   resultScreen.style.display = "none";
@@ -186,6 +187,7 @@ function validate(timedOut) {
 
   const data = sentences[order[current]];
   const isCorrect = normalizeAnswer(answerInput.value) === normalizeAnswer(data.answer);
+  if (window.playSound) playSound(isCorrect ? "correct" : "wrong");
 
   if (isCorrect) {
     score++;
@@ -218,6 +220,7 @@ function showResult() {
   clearTimer();
   gameCard.style.display = "none";
   resultScreen.style.display = "block";
+  if (window.playSound) playSound("success");
   progressFill.style.width = "100%";
   finalScore.textContent = `${score} / ${order.length}`;
   if (window.saveScore) window.saveScore("conjugaison-eclair", difficulty, score, order.length);

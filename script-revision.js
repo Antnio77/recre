@@ -170,6 +170,7 @@ function startRevision(game) {
 
 function renderCurrentItem() {
   if (queueIndex >= queue.length) {
+    if (window.playSound) playSound("success");
     showScreen("finished");
     return;
   }
@@ -292,6 +293,7 @@ function validateOrthoItem() {
   });
 
   const success = allCorrected && noWrongPicks;
+  if (window.playSound) playSound(success ? "correct" : "wrong");
 
   if (errorIndices.length > 0) {
     const list = errorIndices
@@ -349,6 +351,7 @@ function itemKeyFor(game, data) {
 }
 
 function finishRevisionItem(success, itemKey) {
+  if (window.playSound) playSound(success ? "correct" : "wrong");
   if (success) clearMistake(currentGame, itemKey);
   validateBtn.style.display = "none";
   nextBtn.style.display = "inline-block";
@@ -402,6 +405,8 @@ function validateDicteeItem() {
       }</span>`
     );
   }
+
+  if (window.playSound) playSound(allCorrect ? "correct" : "wrong");
 
   const correctionsEl = document.getElementById("revision-corrections");
   correctionsEl.innerHTML = `

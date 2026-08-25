@@ -90,6 +90,7 @@ function clearMapState() {
 
 async function chooseDifficulty(level) {
   difficulty = level;
+  if (window.playSound) playSound("click");
   await loadMap();
   difficultyScreen.style.display = "none";
   resultScreen.style.display = "none";
@@ -132,6 +133,7 @@ function selectCountry(clickedCode) {
 
   const targetCode = order[current];
   const isCorrect = clickedCode === targetCode;
+  if (window.playSound) playSound(isCorrect ? "correct" : "wrong");
 
   mapWrap.querySelectorAll(".map-country").forEach((g) => g.classList.add("disabled"));
   const targetEl = mapWrap.querySelector(`#${targetCode}`);
@@ -170,6 +172,7 @@ function nextRound() {
 function showResult() {
   gameCard.style.display = "none";
   resultScreen.style.display = "block";
+  if (window.playSound) playSound("success");
   progressFill.style.width = "100%";
   finalScore.textContent = `${score} / ${order.length}`;
   if (window.saveScore) window.saveScore("carte-muette", difficulty, score, order.length);
