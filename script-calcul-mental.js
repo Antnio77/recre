@@ -83,7 +83,7 @@ const replayBtn = document.getElementById("replay-btn");
 const changeLevelBtn = document.getElementById("change-level-btn");
 const keypadContainer = document.getElementById("keypad-container");
 
-createKeypad(keypadContainer, answerInput);
+createNumericKeypad(keypadContainer, answerInput);
 
 function shuffle(arr) {
   const a = [...arr];

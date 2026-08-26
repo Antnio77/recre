@@ -317,7 +317,7 @@ const progressLabel = document.getElementById("duel-progress-label");
 const opponentBadge = document.getElementById("duel-opponent-badge");
 const keypadContainer = document.getElementById("duel-keypad-container");
 
-createKeypad(keypadContainer, answerInput);
+createNumericKeypad(keypadContainer, answerInput);
 
 function startDuelGame() {
   // current_question/score viennent du serveur : ça permet aussi une

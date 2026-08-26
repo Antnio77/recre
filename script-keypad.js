@@ -1,10 +1,14 @@
-// Petit moteur de calcul + pavé tactile partagé par les jeux de maths.
-// Contrairement à la version précédente (qui ne faisait qu'insérer des
-// caractères), celle-ci calcule vraiment : les opérateurs, √ et xʸ
-// produisent un résultat numérique quand on appuie sur "=". Ce résultat
-// est ce qui finit dans le champ de réponse, donc aucun changement n'est
-// nécessaire dans les jeux qui utilisent ce pavé (ils lisent juste la
-// valeur finale du champ, comme avant).
+// Deux pavés tactiles partagés par les jeux de maths :
+//
+// - createKeypad : une vraie petite calculatrice (opérateurs, √, xʸ, %,
+//   évaluation sur "="). Réservée aux exercices où c'est la réflexion/la
+//   démarche qui compte, pas le calcul brut (problèmes multi-étapes,
+//   problèmes du quotidien) — là, une calculatrice ne triche pas le but
+//   de l'exercice.
+// - createNumericKeypad : juste les chiffres, la virgule et l'effacement,
+//   sans aucun calcul. Pour les jeux où c'est justement la rapidité de
+//   calcul mental qui est testée (calcul mental éclair, géométrie éclair,
+//   duel) — y donner une calculatrice reviendrait à contourner l'exercice.
 
 function createKeypad(container, inputEl) {
   container.innerHTML = `
@@ -144,6 +148,43 @@ function createKeypad(container, inputEl) {
         inputEl.value += "^";
       } else if (key === "percent") {
         inputEl.value += "%";
+      } else {
+        inputEl.value += key;
+      }
+      inputEl.focus();
+    });
+  });
+}
+
+function createNumericKeypad(container, inputEl) {
+  container.innerHTML = `
+    <div class="keypad">
+      <button type="button" class="keypad-btn" data-key="7">7</button>
+      <button type="button" class="keypad-btn" data-key="8">8</button>
+      <button type="button" class="keypad-btn" data-key="9">9</button>
+      <button type="button" class="keypad-btn keypad-btn--action" data-key="back">⌫</button>
+
+      <button type="button" class="keypad-btn" data-key="4">4</button>
+      <button type="button" class="keypad-btn" data-key="5">5</button>
+      <button type="button" class="keypad-btn" data-key="6">6</button>
+      <button type="button" class="keypad-btn keypad-btn--action" data-key="clear">C</button>
+
+      <button type="button" class="keypad-btn" data-key="1">1</button>
+      <button type="button" class="keypad-btn" data-key="2">2</button>
+      <button type="button" class="keypad-btn" data-key="3">3</button>
+      <button type="button" class="keypad-btn keypad-btn--action" data-key=",">,</button>
+
+      <button type="button" class="keypad-btn" data-key="0" style="grid-column: span 4;">0</button>
+    </div>
+  `;
+
+  container.querySelectorAll(".keypad-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const key = btn.dataset.key;
+      if (key === "back") {
+        inputEl.value = inputEl.value.slice(0, -1);
+      } else if (key === "clear") {
+        inputEl.value = "";
       } else {
         inputEl.value += key;
       }

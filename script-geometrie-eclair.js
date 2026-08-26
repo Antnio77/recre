@@ -102,7 +102,7 @@ const keypadContainer = document.getElementById("keypad-container");
 const loginPrompt = document.getElementById("login-prompt");
 const premiumLocked = document.getElementById("premium-locked");
 
-createKeypad(keypadContainer, answerInput);
+createNumericKeypad(keypadContainer, answerInput);
 
 function shuffle(arr) {
   const a = [...arr];
