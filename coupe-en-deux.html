@@ -42,16 +42,17 @@
 
     <div class="game-header">
       <h1 data-i18n="coupeTitle">Coupe en deux</h1>
+      <p class="reward-countdown-inline" id="reward-countdown"></p>
     </div>
 
     <div class="stats-card" id="login-prompt" style="display:none;">
       <p class="instructions" data-i18n="levelLoginPrompt" style="margin-bottom:0;">Connecte-toi pour voir ta progression.</p>
     </div>
 
-    <div class="premium-locked-card" id="palier-locked" style="display:none;">
+    <div class="premium-locked-card" id="window-locked" style="display:none;">
       <span class="lock-emoji">🔒</span>
-      <h2 data-i18n="coupeLockedTitle">Mini-jeu verrouillé</h2>
-      <p class="instructions" id="palier-locked-message" style="margin-bottom:0;"></p>
+      <h2 data-i18n="rewardLockedTitle">L'arcade est fermée</h2>
+      <p class="instructions" data-i18n="rewardLockedMessage" style="margin-bottom:0;">Passe un nouveau palier pour rouvrir les mini-jeux pendant 15 minutes !</p>
     </div>
 
     <div class="game-card difficulty-screen" id="difficulty-screen" style="display:none;">
@@ -200,6 +201,7 @@
   <script src="script-auth.js"></script>
   <script src="script-premium.js"></script>
   <script src="script-xp.js"></script>
+  <script src="script-reward-window.js"></script>
   <script src="script-coupe-en-deux.js"></script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Réviser mes erreurs — La Récré</title>
+<title>Mémoire — La Récré</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="stylesheet" href="style.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,49 +37,60 @@
 
   <main class="game-page wrap">
     <div style="text-align:center;">
-      <a class="back-link" href="index.html" data-i18n="backLink">← Retour au centre de jeux</a>
+      <a class="back-link" href="mini-jeux.html" data-i18n="miniGamesBackLink">← Retour aux mini-jeux</a>
     </div>
 
     <div class="game-header">
-      <h1 data-i18n="revisionPageTitle">Réviser mes erreurs</h1>
+      <h1 data-i18n="memoireTitle">Mémoire</h1>
+      <p class="reward-countdown-inline" id="reward-countdown"></p>
     </div>
 
     <div class="stats-card" id="login-prompt" style="display:none;">
-      <p class="instructions" data-i18n="revisionLoginPrompt" style="margin-bottom:0;">Connecte-toi pour réviser tes erreurs.</p>
+      <p class="instructions" data-i18n="levelLoginPrompt" style="margin-bottom:0;">Connecte-toi pour voir ta progression.</p>
     </div>
 
-    <div class="stats-card" id="revision-empty" style="display:none;">
-      <p class="instructions" data-i18n="revisionAllClear" style="margin-bottom:0;">Bravo, aucune erreur en attente pour l'instant !</p>
+    <div class="premium-locked-card" id="window-locked" style="display:none;">
+      <span class="lock-emoji">🔒</span>
+      <h2 data-i18n="rewardLockedTitle">L'arcade est fermée</h2>
+      <p class="instructions" data-i18n="rewardLockedMessage" style="margin-bottom:0;">Passe un nouveau palier pour rouvrir les mini-jeux pendant 15 minutes !</p>
     </div>
 
-    <div id="revision-list-screen" style="display:none;">
-      <div class="stats-card">
-        <p class="instructions" data-i18n="revisionListIntro">Voici les jeux pour lesquels tu as des erreurs en attente. Reprends-les pour t'entraîner, ça ne compte pas dans tes statistiques.</p>
-        <div id="revision-game-list"></div>
+    <div class="game-card difficulty-screen" id="difficulty-screen" style="display:none;">
+      <p class="instructions" data-i18n="chooseLevelTitle">Choisis ton niveau de difficulté</p>
+      <div class="difficulty-options">
+        <button class="difficulty-btn difficulty-btn--facile" data-level="facile" type="button">
+          <span class="difficulty-label" data-i18n="levelEasyLabel">Facile</span>
+          <span class="difficulty-desc" data-i18n="memoireEasyDesc">6 paires</span>
+        </button>
+        <button class="difficulty-btn difficulty-btn--moyen" data-level="moyen" type="button">
+          <span class="difficulty-label" data-i18n="levelMediumLabel">Moyen</span>
+          <span class="difficulty-desc" data-i18n="memoireMediumDesc">8 paires</span>
+        </button>
+        <button class="difficulty-btn difficulty-btn--difficile" data-level="difficile" type="button">
+          <span class="difficulty-label" data-i18n="levelHardLabel">Difficile</span>
+          <span class="difficulty-desc" data-i18n="memoireHardDesc">10 paires</span>
+        </button>
       </div>
     </div>
 
-    <div class="game-card" id="revision-play-screen" style="display:none;">
-      <p class="instructions" id="revision-play-instructions"></p>
-      <div class="progress-label" id="revision-progress-label" style="margin-bottom:14px;"></div>
+    <div class="game-card" id="game-card" style="display:none;">
+      <p class="instructions" data-i18n="memoireInstructions">Retrouve toutes les paires en un minimum de coups !</p>
 
-      <div id="revision-item-container"></div>
+      <p class="progress-label" style="margin-bottom:14px;">
+        <span data-i18n="memoireMovesLabel">Coups</span> : <strong id="memory-moves">0</strong>
+      </p>
 
-      <div class="actions" id="revision-actions" style="display:none;">
-        <button class="btn btn-primary" id="revision-validate-btn" type="button" data-i18n="validateBtn">Valider</button>
-        <button class="btn btn-primary" id="revision-next-btn" type="button" style="display:none;" data-i18n="revisionNextBtn">Suivant →</button>
-      </div>
-
-      <div class="actions" style="margin-top:20px;">
-        <button class="btn btn-secondary" id="revision-back-btn" type="button" data-i18n="revisionBackBtn">← Retour à la liste</button>
-      </div>
+      <div class="memory-grid" id="memory-grid"></div>
     </div>
 
-    <div class="game-card result-screen" id="revision-finished-screen" style="display:none;">
-      <h2 data-i18n="revisionDoneTitle">Bravo !</h2>
-      <p class="instructions" data-i18n="revisionDoneMessage">Plus aucune erreur en attente pour ce jeu.</p>
+    <div class="game-card result-screen" id="result-screen" style="display:none;">
+      <h2 data-i18n="memoireWinTitle">Bravo, toutes les paires trouvées !</h2>
+      <div class="score" id="final-score">0</div>
+      <p class="instructions" data-i18n="memoireWinSubtext">coups pour tout retrouver</p>
       <div class="actions">
-        <button class="btn btn-primary" id="revision-finished-back-btn" type="button" data-i18n="revisionBackBtn">← Retour à la liste</button>
+        <button class="btn btn-primary" id="replay-btn" data-i18n="replayBtn">Rejouer</button>
+        <button class="btn btn-secondary" id="change-level-btn" data-i18n="changeLevelBtn">Changer de niveau</button>
+        <a class="btn btn-secondary" href="mini-jeux.html" data-i18n="miniGamesBackLink">← Retour aux mini-jeux</a>
       </div>
     </div>
   </main>
@@ -166,10 +177,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="script-auth.js"></script>
+  <script src="script-premium.js"></script>
   <script src="script-xp.js"></script>
   <script src="script-reward-window.js"></script>
-  <script src="script-mistakes.js"></script>
-  <script src="script-premium.js"></script>
-  <script src="script-revision.js"></script>
+  <script src="script-memoire.js"></script>
 </body>
 </html>

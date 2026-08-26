@@ -1478,6 +1478,30 @@ a{ color: inherit; text-decoration: none; }
   margin-top: 28px;
 }
 
+.reward-countdown-banner{
+  text-align:center;
+  font-family:'Baloo 2', sans-serif;
+  font-weight:700;
+  font-size:15px;
+  color: var(--indigo);
+  background: #EFEDFF;
+  border-radius: 999px;
+  padding: 8px 18px;
+  display:inline-block;
+  margin: 0 auto 4px;
+  width: 100%;
+  max-width: 220px;
+  box-sizing: border-box;
+}
+.reward-countdown-inline{
+  text-align:center;
+  font-family:'Baloo 2', sans-serif;
+  font-weight:700;
+  font-size:14px;
+  color: var(--indigo);
+  margin: 4px 0 0;
+}
+
 .shape-readout{
   display:flex;
   justify-content:center;
@@ -1512,6 +1536,142 @@ a{ color: inherit; text-decoration: none; }
 .shape-piece--b{ fill:#6C63FF; stroke:#5347E8; stroke-width:2; }
 .shape-piece--locked{ opacity:.9; }
 .shape-cut-line{ stroke:#2B2D42; stroke-width:2.5; stroke-dasharray:6 4; pointer-events:none; }
+
+.snake-scoreboard{
+  text-align:center;
+  font-family:'Baloo 2', sans-serif;
+  font-weight:700;
+  font-size:15px;
+  margin-bottom: 14px;
+}
+.snake-scoreboard strong{ color: var(--indigo); }
+
+.snake-canvas-wrap{
+  position:relative;
+  max-width: 340px;
+  margin: 0 auto 18px;
+}
+#snake-canvas{
+  width:100%;
+  height:auto;
+  aspect-ratio: 1 / 1;
+  display:block;
+  touch-action: none;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+}
+.snake-overlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding: 20px;
+  background: rgba(251,250,247,0.88);
+  border-radius: var(--radius-md);
+}
+.snake-overlay p{
+  font-family:'Baloo 2', sans-serif;
+  font-weight:700;
+  color: var(--ink-soft);
+  margin:0;
+}
+
+.snake-dpad{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap: 6px;
+  max-width: 200px;
+  margin: 0 auto;
+}
+.snake-dpad-row{ display:flex; gap:6px; }
+.snake-dpad-btn{
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  border: 2px solid #E7E5DD;
+  background: #FBFAF7;
+  color: var(--ink);
+  font-size: 20px;
+  cursor:pointer;
+  transition: all .1s ease;
+}
+.snake-dpad-btn:hover{ border-color: var(--indigo); transform: translateY(-1px); }
+.snake-dpad-btn:active{ transform: translateY(0); background: var(--indigo); color:#fff; }
+
+.memory-grid{
+  display:grid;
+  grid-template-columns: repeat(var(--memory-cols, 4), 1fr);
+  gap: 10px;
+  max-width: 380px;
+  margin: 0 auto;
+}
+.memory-card{
+  background:none;
+  border:none;
+  padding:0;
+  cursor:pointer;
+  aspect-ratio: 1 / 1;
+  perspective: 600px;
+}
+.memory-card-inner{
+  position:relative;
+  width:100%;
+  height:100%;
+  transition: transform .4s;
+  transform-style: preserve-3d;
+}
+.memory-card.flipped .memory-card-inner{ transform: rotateY(180deg); }
+.memory-card-face{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:12px;
+  backface-visibility:hidden;
+  font-size: 26px;
+}
+.memory-card-face--back{ background: var(--indigo); color:#fff; }
+.memory-card-face--front{ background:#fff; border:2px solid #E7E5DD; transform: rotateY(180deg); }
+.memory-card.matched .memory-card-face--front{ background:#DFF3E4; border-color:#3AAFA9; }
+
+.reflex-area{
+  position:relative;
+  max-width: 380px;
+  aspect-ratio: 4 / 3;
+  margin: 0 auto;
+  background:#FBFAF7;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+  overflow:hidden;
+  cursor: pointer;
+}
+.reflex-target{
+  position:absolute;
+  width: 60px;
+  height: 60px;
+  border-radius:50%;
+  background: var(--coral);
+  box-shadow: 0 6px 14px -4px var(--coral);
+}
+.reflex-message{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'Baloo 2', sans-serif;
+  font-weight:700;
+  font-size:20px;
+  color: var(--ink-soft);
+  pointer-events:none;
+  margin:0;
+  padding: 0 16px;
+  text-align:center;
+}
 
 /* ===================== Mobile (≤ 640px) ===================== */
 /* Tout ce bloc ne s'applique que sous 640px de large : le rendu PC

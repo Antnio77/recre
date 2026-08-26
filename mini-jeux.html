@@ -43,13 +43,22 @@
     <div class="game-header">
       <h1 data-i18n="miniGamesPageTitle">🎮 Mini-jeux bonus</h1>
     </div>
-    <p class="instructions" style="text-align:center; margin-top:-10px;" data-i18n="miniGamesSubtitle">Une récompense 100% fun à chaque palier franchi. Rien à réviser ici, juste du jeu !</p>
+    <p class="instructions" style="text-align:center; margin-top:-10px;" data-i18n="miniGamesSubtitle">À chaque palier franchi, l'arcade s'ouvre pendant 15 minutes. Rien à réviser ici, juste du jeu !</p>
 
     <div class="stats-card" id="login-prompt" style="display:none;">
       <p class="instructions" data-i18n="miniGamesLoginPrompt" style="margin-bottom:0;">Connecte-toi pour voir tes mini-jeux débloqués.</p>
     </div>
 
-    <div class="mini-games-grid" id="mini-games-grid" style="display:none;"></div>
+    <div class="premium-locked-card" id="window-locked" style="display:none;">
+      <span class="lock-emoji">🔒</span>
+      <h2 data-i18n="rewardLockedTitle">L'arcade est fermée</h2>
+      <p class="instructions" data-i18n="rewardLockedMessage" style="margin-bottom:0;">Passe un nouveau palier pour rouvrir les mini-jeux pendant 15 minutes !</p>
+    </div>
+
+    <div id="window-open" style="display:none;">
+      <p class="reward-countdown-banner" id="reward-countdown"></p>
+      <div class="mini-games-grid" id="mini-games-grid"></div>
+    </div>
   </main>
 
   <footer class="site-footer">
@@ -136,6 +145,7 @@
   <script src="script-auth.js"></script>
   <script src="script-premium.js"></script>
   <script src="script-xp.js"></script>
+  <script src="script-reward-window.js"></script>
   <script src="script-mini-jeux.js"></script>
 </body>
 </html>

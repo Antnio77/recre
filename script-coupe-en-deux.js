@@ -2,10 +2,10 @@
 // polygone) qu'il faut couper d'un geste (glisser une ligne droite) en deux
 // parts dont l'aire est aussi proche que possible. Contrairement aux jeux
 // "éducatifs" du site, ce mini-jeu ne remonte aucun score dans Supabase :
-// c'est une récompense purement ludique débloquée à un palier d'XP donné
-// (voir script-xp.js), pas une nouvelle source de progression. L'accès est
-// donc vérifié une fois au chargement (comme le premium ailleurs), puis
-// tout se joue en local.
+// c'est une récompense purement ludique, accessible seulement pendant la
+// fenêtre de 15 minutes qui s'ouvre à chaque passage de palier (voir
+// script-reward-window.js). L'accès est vérifié une fois au chargement,
+// puis tout se joue en local.
 //
 // Géométrie : la forme est un polygone simple généré en plaçant des points
 // à des angles régulièrement espacés (+ un peu de bruit) autour d'un
@@ -15,8 +15,6 @@
 // un clip de Sutherland-Hodgman (un classique pour "garder les sommets d'un
 // côté d'une droite"), puis on calcule l'aire de chaque moitié avec la
 // formule du lacet (shoelace).
-
-const UNLOCK_PALIER = 3;
 
 const DIFFICULTY_CONFIG = {
   facile: { points: 6, irregularity: 0.25, tolerance: 12, time: 15 },
@@ -43,8 +41,8 @@ let dragging = false;
 let dragStart = null;
 
 const loginPrompt = document.getElementById("login-prompt");
-const palierLocked = document.getElementById("palier-locked");
-const palierLockedMessage = document.getElementById("palier-locked-message");
+const windowLocked = document.getElementById("window-locked");
+const rewardCountdown = document.getElementById("reward-countdown");
 const difficultyScreen = document.getElementById("difficulty-screen");
 const gameCard = document.getElementById("game-card");
 const resultScreen = document.getElementById("result-screen");
@@ -313,24 +311,18 @@ changeLevelBtn.addEventListener("click", () => {
   backToDifficulty();
 });
 
-async function initAccess() {
-  const { data: sessionData } = await supabaseClient.auth.getSession();
-  const user = sessionData.session ? sessionData.session.user : null;
-  if (!user) {
-    loginPrompt.style.display = "block";
-    return;
-  }
-  const { data: scores } = await supabaseClient.from("scores").select("score,total,difficulty");
-  const xp = totalXp(scores || []);
-  const idx = levelIndexForXp(xp);
-  const currentPalier = idx + 1;
-
-  if (currentPalier < UNLOCK_PALIER) {
-    palierLockedMessage.textContent = `${t("miniGamesLockedPrefix")} ${UNLOCK_PALIER}. ${t("coupeLockedCurrentPrefix")} ${currentPalier}.`;
-    palierLocked.style.display = "block";
-    return;
-  }
-  difficultyScreen.style.display = "block";
-}
-
-initAccess();
+initMiniGameAccess({
+  loginPrompt,
+  windowLocked,
+  countdownEl: rewardCountdown,
+  onUnlock: () => { difficultyScreen.style.display = "block"; },
+  onExpire: () => {
+    // On ne coupe jamais une manche en cours : seulement si le joueur est
+    // encore sur l'écran de choix de difficulté (pas en pleine partie).
+    if (gameCard.style.display !== "block") {
+      difficultyScreen.style.display = "none";
+      resultScreen.style.display = "none";
+      windowLocked.style.display = "block";
+    }
+  },
+});
