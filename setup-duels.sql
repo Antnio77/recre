@@ -48,6 +48,19 @@ alter table public.duels add column if not exists current_question int not null 
 alter table public.duels add column if not exists host_next_ready boolean not null default false;
 alter table public.duels add column if not exists guest_next_ready boolean not null default false;
 
+-- Bonus de rapidité : +0,5 point à celui des deux qui a répondu juste ET
+-- le plus vite sur une question (seulement si les DEUX ont trouvé la bonne
+-- réponse — sinon celui qui a juste garde déjà l'avantage du point entier).
+-- host_last_ms/guest_last_ms/host_last_correct/guest_last_correct ne
+-- concernent que la question en cours ; ils sont remis à zéro à chaque
+-- passage à la question suivante (voir advance_duel_round).
+alter table public.duels add column if not exists host_bonus numeric(4,1) not null default 0;
+alter table public.duels add column if not exists guest_bonus numeric(4,1) not null default 0;
+alter table public.duels add column if not exists host_last_ms int;
+alter table public.duels add column if not exists guest_last_ms int;
+alter table public.duels add column if not exists host_last_correct boolean not null default false;
+alter table public.duels add column if not exists guest_last_correct boolean not null default false;
+
 alter table public.duels enable row level security;
 
 -- Seuls les deux participants (une fois qu'ils ont rejoint via le code)
@@ -177,7 +190,14 @@ grant execute on function public.set_duel_ready(uuid) to authenticated;
 -- greatest(...) et "or" évitent qu'un rechargement de page en cours de
 -- partie (qui repart de zéro côté client) ne fasse régresser un score ou
 -- un statut "terminé" déjà enregistrés.
-create or replace function public.update_duel_progress(p_duel_id uuid, p_score int, p_finished boolean)
+-- p_correct/p_answer_ms décrivent la réponse du joueur appelant à la
+-- question en cours (temps écoulé depuis l'affichage de la question) ; ils
+-- servent uniquement au calcul du bonus de rapidité dans advance_duel_round,
+-- pas au score de base lui-même.
+create or replace function public.update_duel_progress(
+  p_duel_id uuid, p_score int, p_finished boolean,
+  p_correct boolean default false, p_answer_ms int default null
+)
 returns void
 language plpgsql
 security definer
@@ -187,8 +207,12 @@ begin
   update public.duels
   set host_score = case when host_user_id = auth.uid() then greatest(host_score, p_score) else host_score end,
       host_finished = case when host_user_id = auth.uid() then (host_finished or p_finished) else host_finished end,
+      host_last_correct = case when host_user_id = auth.uid() then p_correct else host_last_correct end,
+      host_last_ms = case when host_user_id = auth.uid() then p_answer_ms else host_last_ms end,
       guest_score = case when guest_user_id = auth.uid() then greatest(guest_score, p_score) else guest_score end,
-      guest_finished = case when guest_user_id = auth.uid() then (guest_finished or p_finished) else guest_finished end
+      guest_finished = case when guest_user_id = auth.uid() then (guest_finished or p_finished) else guest_finished end,
+      guest_last_correct = case when guest_user_id = auth.uid() then p_correct else guest_last_correct end,
+      guest_last_ms = case when guest_user_id = auth.uid() then p_answer_ms else guest_last_ms end
   where id = p_duel_id and (host_user_id = auth.uid() or guest_user_id = auth.uid());
 
   update public.duels
@@ -197,7 +221,7 @@ begin
 end;
 $$;
 
-grant execute on function public.update_duel_progress(uuid, int, boolean) to authenticated;
+grant execute on function public.update_duel_progress(uuid, int, boolean, boolean, int) to authenticated;
 
 -- Le joueur appelant se déclare prêt à passer à la question suivante. Dès
 -- que les DEUX joueurs se sont déclarés prêts, la partie avance d'un cran
@@ -215,22 +239,42 @@ as $$
 declare
   v_len int;
   v_current int;
+  v_host_ms int;
+  v_guest_ms int;
+  v_host_correct boolean;
+  v_guest_correct boolean;
 begin
   update public.duels
   set host_next_ready = case when host_user_id = auth.uid() then true else host_next_ready end,
       guest_next_ready = case when guest_user_id = auth.uid() then true else guest_next_ready end
   where id = p_duel_id and (host_user_id = auth.uid() or guest_user_id = auth.uid());
 
-  select jsonb_array_length(questions), current_question into v_len, v_current
+  select jsonb_array_length(questions), current_question,
+         host_last_ms, guest_last_ms, host_last_correct, guest_last_correct
+  into v_len, v_current, v_host_ms, v_guest_ms, v_host_correct, v_guest_correct
   from public.duels where id = p_duel_id;
 
+  -- Le bonus n'est attribué que si les deux ont trouvé la bonne réponse
+  -- (sinon celui qui a juste a déjà son point d'avance) et qu'on a bien un
+  -- temps pour chacun des deux ; en cas d'égalité stricte, personne ne
+  -- reçoit le bonus.
   update public.duels
   set current_question = least(v_current + 1, v_len - 1),
       status = case when v_current + 1 >= v_len then 'finished' else status end,
       host_finished = case when v_current + 1 >= v_len then true else host_finished end,
       guest_finished = case when v_current + 1 >= v_len then true else guest_finished end,
+      host_bonus = case
+        when v_host_correct and v_guest_correct and v_host_ms is not null and v_guest_ms is not null and v_host_ms < v_guest_ms
+        then host_bonus + 0.5 else host_bonus end,
+      guest_bonus = case
+        when v_host_correct and v_guest_correct and v_host_ms is not null and v_guest_ms is not null and v_guest_ms < v_host_ms
+        then guest_bonus + 0.5 else guest_bonus end,
       host_next_ready = false,
-      guest_next_ready = false
+      guest_next_ready = false,
+      host_last_ms = null,
+      guest_last_ms = null,
+      host_last_correct = false,
+      guest_last_correct = false
   where id = p_duel_id and host_next_ready and guest_next_ready;
 end;
 $$;

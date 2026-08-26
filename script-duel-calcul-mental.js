@@ -47,6 +47,9 @@ let current = 0;
 let score = 0;
 let validated = false;
 let timerTimeout = null;
+let questionStartTime = 0; // Date.now() au moment où la question s'affiche,
+                            // sert à mesurer le temps de réponse pour le
+                            // bonus de rapidité (+0,5 point)
 
 function shuffle(arr) {
   const a = [...arr];
@@ -227,12 +230,24 @@ function applyDuelUpdate(row) {
   }
 }
 
+function opponentRole() {
+  return myRole === "host" ? "guest" : "host";
+}
 function opponentField(field) {
-  const prefix = myRole === "host" ? "guest" : "host";
-  return currentDuel[`${prefix}_${field}`];
+  return currentDuel[`${opponentRole()}_${field}`];
 }
 function myField(field) {
   return currentDuel[`${myRole}_${field}`];
+}
+
+// Score total affiché = nombre de bonnes réponses + bonus de rapidité
+// (+0,5 par question où le joueur a été correct ET plus rapide que
+// l'adversaire, lui-même correct). Voir advance_duel_round côté SQL.
+function totalScore(role) {
+  return (currentDuel[`${role}_score`] || 0) + (currentDuel[`${role}_bonus`] || 0);
+}
+function formatScore(n) {
+  return Number.isInteger(n) ? String(n) : n.toFixed(1);
 }
 
 // ---- Salle d'attente ----
@@ -328,8 +343,8 @@ function startTimer(seconds) {
 
 function updateOpponentBadge() {
   const oppName = myRole === "host" ? currentDuel.guest_name : currentDuel.host_name;
-  const oppScore = opponentField("score");
-  opponentBadge.textContent = `${oppName || t("duelOpponentScore")} : ${oppScore}`;
+  const oppScore = totalScore(opponentRole());
+  opponentBadge.textContent = `${oppName || t("duelOpponentScore")} : ${formatScore(oppScore)}`;
   opponentBadge.classList.toggle("finished", !!opponentField("finished"));
 }
 
@@ -347,10 +362,11 @@ function renderQuestion() {
   const questions = currentDuel.questions;
   const data = questions[current];
   expressionEl.textContent = `${data.expr} = ?`;
-  progressLabel.textContent = `${t("sentenceWord")} ${current + 1} / ${questions.length} · ${t("scoreWord")} : ${score}`;
+  progressLabel.textContent = `${t("sentenceWord")} ${current + 1} / ${questions.length} · ${t("scoreWord")} : ${formatScore(totalScore(myRole))}`;
   updateOpponentBadge();
 
   answerInput.focus();
+  questionStartTime = Date.now();
   startTimer(TIME_PER_LEVEL[currentDuel.difficulty]);
 }
 
@@ -365,6 +381,7 @@ async function validate(timedOut) {
   const typed = answerInput.value.trim().replace(",", ".");
   const typedNum = parseFloat(typed);
   const isCorrect = !isNaN(typedNum) && Math.abs(typedNum - data.answer) < 0.01;
+  const answerMs = Date.now() - questionStartTime;
   if (window.playSound) playSound(isCorrect ? "correct" : "wrong");
 
   if (isCorrect) score++;
@@ -373,13 +390,16 @@ async function validate(timedOut) {
   // pour que currentDuel reflète mon propre score (il resterait sinon
   // périmé pour moi-même jusqu'au prochain évènement temps réel/sondage,
   // alors que je le connais déjà avec certitude). Le passage à la question
-  // suivante (et la fin de partie) est géré séparément par
-  // advance_duel_round, une fois que les deux joueurs sont prêts.
+  // suivante (et la fin de partie), ainsi que le bonus de rapidité, sont
+  // gérés séparément par advance_duel_round, une fois que les deux joueurs
+  // sont prêts.
   currentDuel[`${myRole}_score`] = Math.max(currentDuel[`${myRole}_score`], score);
   supabaseClient.rpc("update_duel_progress", {
     p_duel_id: currentDuel.id,
     p_score: score,
     p_finished: false,
+    p_correct: isCorrect,
+    p_answer_ms: answerMs,
   });
 
   const prefix = timedOut ? `${t("timeUp")} ` : "";
@@ -388,7 +408,7 @@ async function validate(timedOut) {
     : `${prefix}${t("notQuite")} ${t("exactSentenceWas")} <strong>${data.answer}</strong>`;
   feedbackEl.classList.add("show");
 
-  progressLabel.textContent = `${t("sentenceWord")} ${current + 1} / ${questions.length} · ${t("scoreWord")} : ${score}`;
+  progressLabel.textContent = `${t("sentenceWord")} ${current + 1} / ${questions.length} · ${t("scoreWord")} : ${formatScore(totalScore(myRole))}`;
   validateBtn.style.display = "none";
   nextBtn.style.display = "inline-block";
 }
@@ -412,12 +432,12 @@ function showDuelResult() {
   const resultContent = document.getElementById("duel-result-content");
   resultContent.style.display = "block";
 
-  const myScore = myField("score");
-  const oppScore = opponentField("score");
+  const myScore = totalScore(myRole);
+  const oppScore = totalScore(opponentRole());
   const oppName = myRole === "host" ? currentDuel.guest_name : currentDuel.host_name;
 
-  document.getElementById("duel-you-score").textContent = myScore;
-  document.getElementById("duel-opponent-score-final").textContent = oppScore;
+  document.getElementById("duel-you-score").textContent = formatScore(myScore);
+  document.getElementById("duel-opponent-score-final").textContent = formatScore(oppScore);
   document.getElementById("duel-opponent-name-final").textContent = oppName;
 
   const titleEl = document.getElementById("duel-result-title");
