@@ -39,6 +39,15 @@ create table if not exists public.duels (
   started_at timestamptz
 );
 
+-- Index de la question affichée aux deux joueurs en ce moment, et indicateurs
+-- "prêt pour la suite" par joueur : la question suivante ne s'affiche à
+-- personne tant que les deux ne l'ont pas validée (voir advance_duel_round
+-- plus bas). Ajoutés en "add column if not exists" pour rester compatible
+-- avec une table déjà créée par une version précédente de ce script.
+alter table public.duels add column if not exists current_question int not null default 0;
+alter table public.duels add column if not exists host_next_ready boolean not null default false;
+alter table public.duels add column if not exists guest_next_ready boolean not null default false;
+
 alter table public.duels enable row level security;
 
 -- Seuls les deux participants (une fois qu'ils ont rejoint via le code)
@@ -189,3 +198,41 @@ end;
 $$;
 
 grant execute on function public.update_duel_progress(uuid, int, boolean) to authenticated;
+
+-- Le joueur appelant se déclare prêt à passer à la question suivante. Dès
+-- que les DEUX joueurs se sont déclarés prêts, la partie avance d'un cran
+-- pour tout le monde en même temps (current_question incrémenté, drapeaux
+-- "prêt" remis à zéro) — c'est ce qui garde les deux joueurs synchronisés
+-- question par question au lieu de laisser chacun avancer à son rythme.
+-- Sur la toute dernière question, on ne dépasse pas la fin du tableau : le
+-- duel passe directement en "finished" à la place.
+create or replace function public.advance_duel_round(p_duel_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_len int;
+  v_current int;
+begin
+  update public.duels
+  set host_next_ready = case when host_user_id = auth.uid() then true else host_next_ready end,
+      guest_next_ready = case when guest_user_id = auth.uid() then true else guest_next_ready end
+  where id = p_duel_id and (host_user_id = auth.uid() or guest_user_id = auth.uid());
+
+  select jsonb_array_length(questions), current_question into v_len, v_current
+  from public.duels where id = p_duel_id;
+
+  update public.duels
+  set current_question = least(v_current + 1, v_len - 1),
+      status = case when v_current + 1 >= v_len then 'finished' else status end,
+      host_finished = case when v_current + 1 >= v_len then true else host_finished end,
+      guest_finished = case when v_current + 1 >= v_len then true else guest_finished end,
+      host_next_ready = false,
+      guest_next_ready = false
+  where id = p_duel_id and host_next_ready and guest_next_ready;
+end;
+$$;
+
+grant execute on function public.advance_duel_round(uuid) to authenticated;

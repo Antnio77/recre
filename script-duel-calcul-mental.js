@@ -212,6 +212,15 @@ function applyDuelUpdate(row) {
   }
   if (screens.game.style.display === "block") {
     updateOpponentBadge();
+    // Les deux joueurs ne passent à la question suivante qu'une fois que
+    // TOUS LES DEUX ont cliqué "suivant" (voir advance_duel_round côté
+    // SQL) : current_question ne change ici que quand ça arrive vraiment,
+    // et on avance alors ensemble grâce à cet évènement temps réel/sondage.
+    if (row.status === "in_progress" && row.current_question !== current) {
+      current = row.current_question;
+      document.getElementById("duel-round-wait").style.display = "none";
+      renderQuestion();
+    }
   }
   if ((wasInProgress || screens.result.style.display === "block") && row.status === "finished") {
     showDuelResult();
@@ -265,8 +274,7 @@ document.getElementById("duel-ready-btn").addEventListener("click", async () => 
 });
 
 document.getElementById("duel-copy-link-btn").addEventListener("click", () => {
-  const url = `${location.origin}${location.pathname}?code=${currentDuel.code}`;
-  navigator.clipboard.writeText(url).then(() => {
+  navigator.clipboard.writeText(currentDuel.code).then(() => {
     const msg = document.getElementById("duel-copy-confirm");
     msg.classList.add("show");
     setTimeout(() => msg.classList.remove("show"), 2000);
@@ -288,9 +296,13 @@ const keypadContainer = document.getElementById("duel-keypad-container");
 createKeypad(keypadContainer, answerInput);
 
 function startDuelGame() {
-  current = 0;
-  score = 0;
+  // current_question/score viennent du serveur : ça permet aussi une
+  // reprise correcte à la bonne question si la page est rechargée en
+  // cours de partie, au lieu de repartir de zéro.
+  current = currentDuel.current_question || 0;
+  score = myField("score") || 0;
   showScreen("game");
+  document.getElementById("duel-round-wait").style.display = "none";
   renderQuestion();
 }
 
@@ -329,6 +341,8 @@ function renderQuestion() {
   feedbackEl.innerHTML = "";
   validateBtn.style.display = "inline-block";
   nextBtn.style.display = "none";
+  nextBtn.disabled = false;
+  document.getElementById("duel-round-wait").style.display = "none";
 
   const questions = currentDuel.questions;
   const data = questions[current];
@@ -355,17 +369,17 @@ async function validate(timedOut) {
 
   if (isCorrect) score++;
 
-  const isLast = current >= questions.length - 1;
   // Mise à jour optimiste locale : on n'attend pas l'aller-retour réseau
-  // pour que currentDuel reflète mon propre score/statut (il reste sinon
-  // périmé pour moi-même jusqu'au prochain evenement temps réel/sondage,
-  // alors que je le connais déjà avec certitude).
+  // pour que currentDuel reflète mon propre score (il resterait sinon
+  // périmé pour moi-même jusqu'au prochain évènement temps réel/sondage,
+  // alors que je le connais déjà avec certitude). Le passage à la question
+  // suivante (et la fin de partie) est géré séparément par
+  // advance_duel_round, une fois que les deux joueurs sont prêts.
   currentDuel[`${myRole}_score`] = Math.max(currentDuel[`${myRole}_score`], score);
-  currentDuel[`${myRole}_finished`] = currentDuel[`${myRole}_finished`] || isLast;
   supabaseClient.rpc("update_duel_progress", {
     p_duel_id: currentDuel.id,
     p_score: score,
-    p_finished: isLast,
+    p_finished: false,
   });
 
   const prefix = timedOut ? `${t("timeUp")} ` : "";
@@ -379,24 +393,15 @@ async function validate(timedOut) {
   nextBtn.style.display = "inline-block";
 }
 
-function nextQuestion() {
-  current++;
-  if (current >= currentDuel.questions.length) {
-    showWaitingForOpponentOrResult();
-  } else {
-    renderQuestion();
-  }
-}
-
-function showWaitingForOpponentOrResult() {
+// On ne passe jamais à la question suivante tout seul : on se déclare
+// "prêt", et c'est le passage à deux (voir advance_duel_round + le
+// applyDuelUpdate déclenché par Realtime/le sondage) qui affichera la
+// question suivante pour les deux joueurs en même temps.
+async function nextQuestion() {
   clearTimer();
-  if (opponentField("finished")) {
-    showDuelResult();
-  } else {
-    showScreen("result");
-    document.getElementById("duel-result-content").style.display = "none";
-    document.getElementById("duel-waiting-opponent-finish").style.display = "block";
-  }
+  nextBtn.disabled = true;
+  document.getElementById("duel-round-wait").style.display = "block";
+  await supabaseClient.rpc("advance_duel_round", { p_duel_id: currentDuel.id });
 }
 
 function showDuelResult() {
