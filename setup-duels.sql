@@ -87,7 +87,7 @@ declare
 begin
   select coalesce(raw_user_meta_data ->> 'name', split_part(email::text, '@', 1))
   into v_name
-  from auth.users where id = auth.uid();
+  from auth.users u where u.id = auth.uid();
 
   loop
     v_code := '';
@@ -124,7 +124,7 @@ declare
 begin
   select coalesce(raw_user_meta_data ->> 'name', split_part(email::text, '@', 1))
   into v_name
-  from auth.users where id = auth.uid();
+  from auth.users u where u.id = auth.uid();
 
   update public.duels
   set guest_user_id = auth.uid(), guest_name = v_name
