@@ -1469,6 +1469,50 @@ a{ color: inherit; text-decoration: none; }
   font-weight:600;
 }
 
+/* ===================== Mini-jeux bonus ===================== */
+
+.mini-games-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  margin-top: 28px;
+}
+
+.shape-readout{
+  display:flex;
+  justify-content:center;
+  gap: 24px;
+  font-family:'Baloo 2', sans-serif;
+  font-weight:700;
+  font-size:15px;
+  margin-bottom: 14px;
+}
+.shape-part{ display:flex; align-items:center; gap:6px; }
+.shape-part strong{ color: var(--indigo); }
+.shape-swatch{ width:12px; height:12px; border-radius:3px; display:inline-block; }
+.shape-swatch--a{ background:#FFC145; }
+.shape-swatch--b{ background:#6C63FF; }
+
+.shape-canvas-wrap{
+  max-width: 320px;
+  margin: 0 auto 20px;
+}
+.shape-svg{
+  width:100%;
+  height:auto;
+  aspect-ratio: 1 / 1;
+  touch-action: none;
+  cursor: crosshair;
+  border-radius: var(--radius-md);
+  background:#FBFAF7;
+  box-shadow: var(--shadow);
+}
+.shape-piece{ transition: opacity .15s ease; }
+.shape-piece--a{ fill:#FFC145; stroke:#DE9E1A; stroke-width:2; }
+.shape-piece--b{ fill:#6C63FF; stroke:#5347E8; stroke-width:2; }
+.shape-piece--locked{ opacity:.9; }
+.shape-cut-line{ stroke:#2B2D42; stroke-width:2.5; stroke-dasharray:6 4; pointer-events:none; }
+
 /* ===================== Mobile (≤ 640px) ===================== */
 /* Tout ce bloc ne s'applique que sous 640px de large : le rendu PC
    reste strictement identique à avant. */

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ma progression — La Récré</title>
+<title>Mini-jeux bonus — La Récré</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="stylesheet" href="style.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,34 +41,15 @@
     </div>
 
     <div class="game-header">
-      <h1 data-i18n="levelPageTitle">Ma progression</h1>
+      <h1 data-i18n="miniGamesPageTitle">🎮 Mini-jeux bonus</h1>
+    </div>
+    <p class="instructions" style="text-align:center; margin-top:-10px;" data-i18n="miniGamesSubtitle">Une récompense 100% fun à chaque palier franchi. Rien à réviser ici, juste du jeu !</p>
+
+    <div class="stats-card" id="login-prompt" style="display:none;">
+      <p class="instructions" data-i18n="miniGamesLoginPrompt" style="margin-bottom:0;">Connecte-toi pour voir tes mini-jeux débloqués.</p>
     </div>
 
-    <div class="stats-card" id="login-prompt">
-      <p class="instructions" data-i18n="levelLoginPrompt" style="margin-bottom:0;">Connecte-toi pour voir ta progression.</p>
-    </div>
-
-    <div id="level-content" style="display:none;">
-      <div class="stats-card">
-        <div class="level-summary">
-          <span class="level-summary-emoji" id="summary-emoji">🐣</span>
-          <div class="level-summary-name" id="summary-name">Poussin de la Récré</div>
-          <div class="level-summary-xp" id="summary-xp">0 XP</div>
-        </div>
-        <div class="progress-bar"><div class="progress-fill" id="next-level-fill"></div></div>
-        <div class="progress-label" id="next-level-label" style="margin-top:8px;"></div>
-      </div>
-
-      <div class="stats-card">
-        <h2 data-i18n="levelPathTitle">Le chemin de la Récré</h2>
-        <div class="level-path" id="level-path"></div>
-      </div>
-
-      <div class="stats-card" style="text-align:center;">
-        <p class="instructions" data-i18n="miniGamesSubtitle" style="margin-bottom:14px;">Une récompense 100% fun à chaque palier franchi. Rien à réviser ici, juste du jeu !</p>
-        <a href="mini-jeux.html" class="btn btn-primary" data-i18n="miniGamesBtn">🎮 Mini-jeux</a>
-      </div>
-    </div>
+    <div class="mini-games-grid" id="mini-games-grid" style="display:none;"></div>
   </main>
 
   <footer class="site-footer">
@@ -155,6 +136,6 @@
   <script src="script-auth.js"></script>
   <script src="script-premium.js"></script>
   <script src="script-xp.js"></script>
-  <script src="script-niveau.js"></script>
+  <script src="script-mini-jeux.js"></script>
 </body>
 </html>
