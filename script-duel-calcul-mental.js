@@ -50,6 +50,9 @@ let timerTimeout = null;
 let questionStartTime = 0; // Date.now() au moment où la question s'affiche,
                             // sert à mesurer le temps de réponse pour le
                             // bonus de rapidité (+0,5 point)
+let pendingScoreUpdate = null; // promesse de l'envoi du score en cours, pour
+                                // garantir qu'il est bien arrivé au serveur
+                                // AVANT de déclencher advance_duel_round
 
 function shuffle(arr) {
   const a = [...arr];
@@ -243,8 +246,14 @@ function myField(field) {
 // Score total affiché = nombre de bonnes réponses + bonus de rapidité
 // (+0,5 par question où le joueur a été correct ET plus rapide que
 // l'adversaire, lui-même correct). Voir advance_duel_round côté SQL.
+// parseFloat est nécessaire car les colonnes "numeric" (host_bonus /
+// guest_bonus) sont renvoyées par Supabase sous forme de CHAÎNE (ex. "0.5"),
+// pas de nombre — sans ça, "5 + '0.5'" ferait une concaténation de texte
+// ("50.5") au lieu d'une addition.
 function totalScore(role) {
-  return (currentDuel[`${role}_score`] || 0) + (currentDuel[`${role}_bonus`] || 0);
+  const base = Number(currentDuel[`${role}_score`]) || 0;
+  const bonus = parseFloat(currentDuel[`${role}_bonus`]) || 0;
+  return base + bonus;
 }
 function formatScore(n) {
   return Number.isInteger(n) ? String(n) : n.toFixed(1);
@@ -394,12 +403,14 @@ async function validate(timedOut) {
   // gérés séparément par advance_duel_round, une fois que les deux joueurs
   // sont prêts.
   currentDuel[`${myRole}_score`] = Math.max(currentDuel[`${myRole}_score`], score);
-  supabaseClient.rpc("update_duel_progress", {
+  pendingScoreUpdate = supabaseClient.rpc("update_duel_progress", {
     p_duel_id: currentDuel.id,
     p_score: score,
     p_finished: false,
     p_correct: isCorrect,
     p_answer_ms: answerMs,
+  }).then(({ error }) => {
+    if (error) console.error("Erreur update_duel_progress :", error);
   });
 
   const prefix = timedOut ? `${t("timeUp")} ` : "";
@@ -421,7 +432,13 @@ async function nextQuestion() {
   clearTimer();
   nextBtn.disabled = true;
   document.getElementById("duel-round-wait").style.display = "block";
-  await supabaseClient.rpc("advance_duel_round", { p_duel_id: currentDuel.id });
+  // On s'assure que mon score de cette question est bien arrivé côté
+  // serveur avant de déclencher le passage à la suite : sinon, sur un
+  // réseau lent, advance_duel_round pourrait s'exécuter avant que
+  // update_duel_progress n'ait persisté quoi que ce soit.
+  if (pendingScoreUpdate) await pendingScoreUpdate;
+  const { error } = await supabaseClient.rpc("advance_duel_round", { p_duel_id: currentDuel.id });
+  if (error) console.error("Erreur advance_duel_round :", error);
 }
 
 function showDuelResult() {
