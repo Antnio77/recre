@@ -134,10 +134,13 @@ function renderCutPreview(origin, dir) {
   cutLine.setAttribute("x2", origin[0] + dir[0] * LINE_EXTEND);
   cutLine.setAttribute("y2", origin[1] + dir[1] * LINE_EXTEND);
 
+  // On NE montre PAS les pourcentages pendant le glissé : le but du jeu est
+  // d'estimer à l'œil, pas de regarder les chiffres jusqu'à tomber pile sur
+  // 50/50. Seul le partage visuel des couleurs sert d'indice ; les vrais
+  // pourcentages ne sont révélés qu'après avoir cliqué "Couper !" (voir
+  // cutNow), comme une carte qu'on retourne.
   const pctA = totalArea > 0 ? (areaA / totalArea) * 100 : 0;
   const pctB = 100 - pctA;
-  areaAVal.textContent = `${Math.round(pctA)}%`;
-  areaBVal.textContent = `${Math.round(pctB)}%`;
 
   return { pctA, pctB };
 }
@@ -166,6 +169,8 @@ svg.addEventListener("pointermove", (e) => {
   if (!hasPreview) {
     hasPreview = true;
     cutBtn.disabled = false;
+    areaAVal.textContent = "?";
+    areaBVal.textContent = "?";
   }
 });
 
@@ -240,6 +245,11 @@ function cutNow(timedOut) {
   const isCorrect = diffPct <= tolerance;
   if (window.playSound) playSound(isCorrect ? "correct" : "wrong");
   if (isCorrect) score++;
+
+  // La révélation : les pourcentages n'apparaissent qu'à cet instant,
+  // jamais pendant le glissé.
+  areaAVal.textContent = `${Math.round(lastResult.pctA)}%`;
+  areaBVal.textContent = `${Math.round(lastResult.pctB)}%`;
 
   pieceA.classList.add("shape-piece--locked");
   pieceB.classList.add("shape-piece--locked");
