@@ -267,6 +267,16 @@ const translations = {
     mapClickOn: "Clique sur :",
     resultSubtext14: "Pays correctement repérés",
 
+    tile15Title: "Traduction éclair",
+    tile15Desc: "Traduis un mot ou une phrase avant la fin du temps imparti.",
+    gameTitle15: "Traduction éclair",
+    traductionEasyDesc: "Mots simples et salutations",
+    traductionMediumDesc: "Phrases courtes du quotidien",
+    traductionHardDesc: "Phrases plus longues et complexes",
+    traductionInstructions: "Traduis le mot ou la phrase avant la fin du temps imparti.",
+    translationPlaceholder: "Ta traduction...",
+    resultSubtext15: "Traductions correctes",
+
     duelChallengeFriendBtn: "⚔️ Défier un ami",
     duelPageTitle: "Duel : Calcul mental éclair",
     duelBackToSolo: "← Retour au calcul mental solo",
@@ -623,6 +633,16 @@ const translations = {
     mapHardDesc: "Small countries and the Balkans, trickier to spot",
     mapClickOn: "Click on:",
     resultSubtext14: "Countries correctly spotted",
+
+    tile15Title: "Lightning Translation",
+    tile15Desc: "Translate a word or phrase before time runs out.",
+    gameTitle15: "Lightning Translation",
+    traductionEasyDesc: "Simple words and greetings",
+    traductionMediumDesc: "Short everyday sentences",
+    traductionHardDesc: "Longer, more complex sentences",
+    traductionInstructions: "Translate the word or phrase before time runs out.",
+    translationPlaceholder: "Your translation...",
+    resultSubtext15: "Correct translations",
 
     duelChallengeFriendBtn: "⚔️ Challenge a friend",
     duelPageTitle: "Duel: Lightning Mental Math",

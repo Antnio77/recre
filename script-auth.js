@@ -32,6 +32,7 @@ function gameDisplayName(game) {
   if (game === "histoire-geo") return t("tile12Title");
   if (game === "frise-chronologique") return t("tile13Title");
   if (game === "carte-muette") return t("tile14Title");
+  if (game === "traduction-eclair") return t("tile15Title");
   return game;
 }
 

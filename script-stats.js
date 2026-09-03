@@ -7,6 +7,14 @@ const HISTGEO_GAMES = ["histoire-geo", "frise-chronologique", "carte-muette"];
 const DIFFICULTY_WEIGHT = { facile: 0.6, moyen: 0.8, difficile: 1 };
 
 function categorizeScore(row) {
+  if (row.game === "traduction-eclair") {
+    // Cas particulier : contrairement aux autres jeux de langues, le
+    // contenu de ce jeu va dans le sens OPPOSÉ à la langue de l'interface
+    // (interface en français -> on traduit VERS l'anglais, donc c'est bien
+    // de l'anglais qu'on teste, pas du français). On inverse donc le
+    // mapping habituel.
+    return row.lang === "en" ? "fr" : "en";
+  }
   if (LANG_GAMES.includes(row.game)) {
     return row.lang === "en" ? "en" : "fr";
   }

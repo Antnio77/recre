@@ -3,6 +3,11 @@ const HISTGEO_GAMES = ["histoire-geo", "frise-chronologique", "carte-muette"];
 const DIFFICULTY_WEIGHT = { facile: 0.6, moyen: 0.8, difficile: 1 };
 
 function categorizeScore(row) {
+  if (row.game === "traduction-eclair") {
+    // Voir script-stats.js : le sens de traduction est opposé à la langue
+    // de l'interface, donc le mapping habituel est inversé pour ce jeu.
+    return row.lang === "en" ? "fr" : "en";
+  }
   if (LANG_GAMES.includes(row.game)) {
     return row.lang === "en" ? "en" : "fr";
   }

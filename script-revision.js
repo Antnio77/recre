@@ -36,6 +36,10 @@ const RENDERERS = {
     game: "conjugaison-eclair",
     instructionsKey: "conjInstructions",
   }),
+  "traduction-eclair": makeFreeTextRenderer({
+    game: "traduction-eclair",
+    instructionsKey: "traductionInstructions",
+  }),
   "texte-a-trous": makeMultipleChoiceRenderer({
     game: "texte-a-trous",
     instructionsKey: "textInstructions",
@@ -84,6 +88,7 @@ const GAME_EMOJIS = {
   "bon-resultat-maths": "🔢",
   "problemes-quotidien": "🧮",
   "conjugaison-eclair": "🔤",
+  "traduction-eclair": "🌐",
   "texte-a-trous": "📄",
   "problemes-multi-etapes": "🧩",
   "geometrie-eclair": "📐",
